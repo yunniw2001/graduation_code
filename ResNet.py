@@ -1,6 +1,8 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ArcFace import ArcFace
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -53,7 +55,8 @@ class ResNet(nn.Module):
         # conv5.x
         self.layer4 = self._make_layer(block, 512, layers[3])
         self.avgpool = nn.AvgPool2d(8)
-        self.fc = nn.Linear(512 * block.expansion, 128, bias=False)
+        self.fc = nn.Linear(18432, 128, bias=False)
+        self.arcLoss = ArcFace(128,480)
 
     def _make_layer(self, block, channel, blocks, stride=1):
         downsample = None
@@ -80,14 +83,11 @@ class ResNet(nn.Module):
         x = x.view(x.size(0), -1)
         # print(x.size())
         feature = self.fc(x)
-
-        # feature = self.fc(x)
         if label is None:
-            return feature, F.normalize(feature)
+            return feature
         else:
-
-            _, mlogits, _, _ = self.lmcl(feature, label)
-            return feature,mlogits
+            logits, accuracy = self.arcLoss(feature, label)
+            return torch.log(logits),accuracy
 
 
 def resnet34():

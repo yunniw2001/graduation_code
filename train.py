@@ -79,8 +79,7 @@ epochs = 1000
 prepare_transform_for_image()
 train_dataset = MyDataset('/home/ubuntu/dataset/tongji/train/',
                           '/home/ubuntu/dataset/tongji/train_label.txt', preprocessing)
-train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, num_workers=2,
-                              pin_memory=False)
+train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 # train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 net = ResNet.resnet34()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -91,37 +90,49 @@ data_iter = iter(train_dataloader)
 images, labels = next(data_iter)
 img_grid = torchvision.utils.make_grid(images)
 writer.add_image('preview_some_pictures', img_grid)
-images = images.cuda()
-writer.add_graph(net, images)
+# images = images.cuda()
+# writer.add_graph(net, images)
 # 损失函数
-criterion_arc = ArcFace(feature_size, num_class)
 criterion = nn.CrossEntropyLoss().cuda()
 optimizer = optim.SGD(net.parameters(), lr=lr, weight_decay=0.0005)
 
 torch.autograd.set_grad_enabled(True)
 train_loss = []
 train_idx = []
+per_idx = 0
 train_accuracy = []
 epoch = 0
-record_size = 1
+record_size = 15
 flag = False
+# 加载参数
+PATH_NET = '/home/ubuntu/graduation_model/deeplearning/model_net_134.pt'
+# PATH_ARC = '/home/ubuntu/graduation_model/deeplearning/model_arcloss_139.pt'
+flag = True
+print("===start load param===")
+net.load_state_dict(torch.load(PATH_NET))
+net.train()
+# param = torch.load(PATH_ARC)
+print("===successfully load net===")
+
+
 print("===start_training===")
 while epoch < epochs:
     running_loss = 0.0
     accuracy = 0.0
     if flag == True:
-        epoch, per_idx, train_idx, train_loss, train_accuracy = read_txt('/home/ubuntu/graduation_modle/deeplearning/data_v3.txt')
+        epoch, per_idx, train_idx, train_loss, train_accuracy = read_txt('/home/ubuntu/graduation_model/deeplearning/data.txt')
         # epoch, per_idx, train_idx, train_loss,train_accuracy = read_txt('/home/ubuntu/project/data_v1.0.txt')
         flag = False
     for i, data in enumerate(train_dataloader):
         images, label = data
         images = images.to(device)
         label = label.to(device)
-        feats, _ = net(images)
-        logits, tmp_accuracy = criterion_arc(feats, label)
-        loss = criterion(logits, label)
+        logits,tmp_accuracy = net.forward(images,label)
+        # out = torch.log(logits)
+        loss = criterion(logits,label)
         # 计算
         accuracy += tmp_accuracy
+        # print(loss.item())
         running_loss += loss.item()
         optimizer.zero_grad()
         loss.backward()
@@ -138,13 +149,11 @@ while epoch < epochs:
             accuracy = 0
             per_idx += 1
             running_loss = 0
-        if (epoch + 1) % 20 == 0:
-            save_path = '/home/ubuntu/graduation_modle/deeplearning/data.txt'
-            make_text_save(save_path, epoch, per_idx, train_idx, train_loss, train_accuracy)
-            PATH = "/home/ubuntu/graduation_modle/deeplearning/model_net_" + str(epoch) + ".pt"
-            # Save
-            torch.save(net.state_dict(), PATH)
-            PATH = "/home/ubuntu/graduation_modle/deeplearning/model_arcloss_" + str(epoch) + ".pt"
-            # Save
-            torch.save(criterion_arc.state_dict(), PATH)
-        break
+    if (epoch + 1) % 15 == 0:
+        save_path = '/home/ubuntu/graduation_model/deeplearning/data.txt'
+        make_text_save(save_path, epoch, per_idx, train_idx, train_loss, train_accuracy)
+        PATH = "/home/ubuntu/graduation_model/deeplearning/model_net_" + str(epoch) + ".pt"
+        # Save
+        torch.save(net.state_dict(), PATH)
+    epoch+=1
+

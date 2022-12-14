@@ -10,9 +10,10 @@ def calculate_accuracy(logits,label):
 class ArcFace(nn.Module):
     def __init__(self, feature_size, class_num, s=64, m=0.1):
         super(ArcFace, self).__init__()
-        self.weight = nn.Parameter(torch.randn(feature_size, class_num)).to(device)
+        self.weight = nn.Parameter(torch.randn(feature_size, class_num))
         self.s = s
         self.m = m
+        # nn.init.kaiming_normal_(self.weight)
 
     def forward(self, feature, label):
         w = F.normalize(self.weight, dim=0)
