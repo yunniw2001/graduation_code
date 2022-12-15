@@ -84,7 +84,7 @@ class ResNet(nn.Module):
         # print(x.size())
         feature = self.fc(x)
         if label is None:
-            return feature
+            return feature, F.normalize(feature)
         else:
             logits, accuracy = self.arcLoss(feature, label)
             return torch.log(logits),accuracy
