@@ -68,10 +68,11 @@ lr = 0.001
 epochs = 1000
 
 prepare_transform_for_image()
-session1_dataset = MyDataset('/home/ubuntu/dataset/tongji/test/session1/',
-                             '/home/ubuntu/dataset/tongji/test/session1_label.txt', gallery_preprocessing)
-session2_dataset = MyDataset('/home/ubuntu/dataset/tongji/test/session2/',
-                             '/home/ubuntu/dataset/tongji/test/session2_label.txt', gallery_preprocessing)
+root_path = '/home/ubuntu/dataset/IITD/test_session/'
+session1_dataset = MyDataset(root_path+'session1/',
+                             root_path+'session1_label.txt', gallery_preprocessing)
+session2_dataset = MyDataset(root_path+'session2/',
+                             root_path+'session2_label.txt', gallery_preprocessing)
 session1_dataloader = DataLoader(dataset=session1_dataset, batch_size=batch_size, shuffle=False)
 session2_dataloader = DataLoader(dataset=session2_dataset, batch_size=batch_size, shuffle=True)
 # train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
