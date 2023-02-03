@@ -11,10 +11,12 @@ from PIL import Image
 from sklearn.decomposition import PCA
 
 preprocessing = None
+testprocessing = None
 
 
 def prepare_transform_for_image():
     global preprocessing
+    global testprocessing
     rotation = transforms.RandomRotation(5)
     resized_cropping = transforms.Resize((224, 224))
     contrast_brightness_adjustment = transforms.ColorJitter(brightness=0.5, contrast=0.5)
@@ -30,13 +32,17 @@ def prepare_transform_for_image():
     preprocessing = transforms.Compose(
         [
             transforms.RandomApply(
-                [rotation, contrast_brightness_adjustment, smooth_or_sharpening,color_shift], 0.6),
+                [rotation, contrast_brightness_adjustment, smooth_or_sharpening, color_shift], 0.6),
             resized_cropping,
             transforms.Grayscale(),
             transforms.ToTensor(),
             transforms.Normalize(0.5, 0.5)
         ]
     )
+    testprocessing = transforms.Compose(
+        [resized_cropping,
+         transforms.ToTensor(),
+         transforms.Normalize(0.5, 0.5)])
 
 
 # 读入图像
@@ -57,7 +63,7 @@ if not already_processed:
     for line in content:
         img_name, img_label = line.split(' ')[0], int(line.split(' ')[1])
         tmp_image_path = img_PATH + img_name
-        if img_label>class_size:
+        if img_label > class_size:
             class_size = img_label
         cur = preprocessing(Image.open(tmp_image_path).convert('L'))
         # print(cur.size())
@@ -76,7 +82,7 @@ else:
     print('===start read label file!===')
     for line in content:
         img_name, img_label = line.split(' ')[0], int(line.split(' ')[1])
-        if img_label>class_size:
+        if img_label > class_size:
             class_size = img_label
         palmlabel.append(img_label)
 
@@ -86,10 +92,30 @@ else:
 #     axes[i%4][i//4].imshow(palms[i], cmap="gray")
 # plt.show()
 
-print('===%d images Done! %d classes in total!==='%(len(content),class_size+1))
-print(palmmatrix)
-print(palmmatrix.shape)
+print('===%d images Done! %d classes in total!===' % (len(content), class_size + 1))
+# print(palmmatrix)
+# print(palmmatrix.shape)
 # PCA
-# pca = PCA().fit(palmmatrix)
+print('===start PCA!===')
+pca = PCA().fit(palmmatrix)
+print('===PCA DONE!===')
+# 预览特征脸
+n_components = 50
+eigenpalms = pca.components_[:n_components]
 
+# fig, axes = plt.subplots(4, 4, sharex=True, sharey=True, figsize=(8, 10))
+# for i in range(16):
+#     axes[i % 4][i // 4].imshow(eigenpalms[i].reshape(224, 224), cmap="gray")
+# plt.show()
 
+# 权重
+weights = eigenpalms @ (palmmatrix-pca.mean_).T
+# 测试
+print('===start test!===')
+goal = 100
+query = palmmatrix[goal].reshape(1,-1)
+query_weight = eigenpalms @ (query-pca.mean_).T
+euclidean_distance = np.linalg.norm(weights - query_weight, axis=0)
+best_match = np.argmin(euclidean_distance)
+print("Best match %s with Euclidean distance %f" % (palmlabel[best_match], euclidean_distance[best_match]))
+print('the correct answer is %d'%palmlabel[goal])
