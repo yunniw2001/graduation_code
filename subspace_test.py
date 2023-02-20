@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from sklearn.decomposition import PCA
 from joblib import dump, load
+from sklearn.metrics.pairwise import cosine_similarity
 
 preprocessing = None
 testprocessing = None
@@ -44,28 +45,23 @@ def prepare_transform_for_image():
         [resized_cropping,
          transforms.Grayscale(),
          transforms.ToTensor(),
-         transforms.Normalize(0.5, 0.5)])
-
-def calculate_cos_similar(matrix,vector):
-    num = np.dot(vector.T,matrix)  # 向量点乘
-    denom = np.linalg.norm(matrix) * np.linalg.norm(vector)  # 求模长的乘积
-    print(num.shape)
-    res = num / denom
-    # print(res.shape)
-    # res[np.isneginf(res)] = 0
-    res = 0.5+0.5*res
-    return res[0]
+         transforms.Normalize(0.5, 0.5)
+         ]
+    )
 
 
 # 读入图片
-img_PATH = '/home/ubuntu/dataset/CASIA/test_session/session2/'
-label_PATH = '/home/ubuntu/dataset/CASIA/test_session/session2_label.txt'
+dataset = 'IITD'
+img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2/'
+label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2_label.txt'
+gallery_label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
 save_pca_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1.joblib'
 save_numpy_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1_numpy.npy'
 prepare_transform_for_image()
-palms = []
+# palms = []
 palmmatrix = []
-palmlabel = []
+testmatrix = []
+testlabel = []
 
 label_file = open(label_PATH, 'r')
 content = label_file.readlines()
@@ -80,14 +76,25 @@ for line in content:
         class_size = img_label
     if img_label < min_size:
         min_size = img_label
-    cur = preprocessing(Image.open(tmp_image_path).convert('L'))
+    cur = testprocessing(Image.open(tmp_image_path).convert('L'))
     # print(cur.size())
     cur = cur.permute(1, 2, 0).detach().numpy()
-    palms.append(cur)
-    palmmatrix.append(cur.flatten())
-    palmlabel.append(img_label)
-palmmatrix = np.array(palmmatrix)
+    # palms.append(cur)
+    testmatrix.append(cur.flatten())
+    testlabel.append(img_label)
+testmatrix = np.array(testmatrix)
+print(testmatrix)
+# print(testlabel)
+# print(palmmatrix.shape)
 print('===%d images Done! %d classes in total!===' % (len(content), class_size - min_size + 1))
+# 读入原始标签
+label_file = open(gallery_label_PATH, 'r')
+content = label_file.readlines()
+palmlabel = []
+for line in content:
+    img_label = int(line.split(' ')[1])
+    palmlabel.append(img_label)
+# print(palmlabel)
 # 导入pca
 print('===start load pca!===')
 palmmatrix = np.load(save_numpy_PATH)
@@ -106,16 +113,19 @@ idx = 0
 cur_correct = 0
 total_correct = 0
 batch = 0
-while idx < len(palmmatrix):
-    query = palmmatrix[idx].reshape(1, -1)
+while idx < len(testmatrix):
+    query = testmatrix[idx].reshape(1, -1)
     query_weight = eigenpalms @ (query - pca.mean_).T
+    # print(query_weight.shape)
+    # print(weights.shape)
     # cos_similarity = calculate_cos_similar(weights,query_weight)
-    cos_similarity = np.linalg.norm(weights - query_weight, axis=0)
-    best_match = np.argmin(cos_similarity)
+    cos_similarity = cosine_similarity(weights.T,query_weight.T)
+    best_match = np.argmax(cos_similarity)
     # print(palmlabel[best_match])
     # print(len(palmlabel))
     # print(palmlabel[idx])
-    if palmlabel[best_match] == palmlabel[idx]:
+    # print('%d ?= %d'%(palmlabel[best_match],testlabel[idx]))
+    if palmlabel[best_match] == testlabel[idx]:
         cur_correct+=1
         total_correct+=1
     if (idx+1)%100 == 0:
@@ -125,4 +135,4 @@ while idx < len(palmmatrix):
     idx += 1
     # break
 
-print('TOTAL CORRECT RATE: %.2f'%(total_correct/len(palmmatrix)))
+print('TOTAL CORRECT RATE: %.2f'%(total_correct/len(testmatrix)))

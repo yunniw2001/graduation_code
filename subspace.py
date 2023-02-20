@@ -1,3 +1,5 @@
+import sys
+
 import cv2
 import numpy as np
 import torchvision
@@ -48,15 +50,16 @@ def prepare_transform_for_image():
 
 
 # 读入图像
-img_PATH = '/home/ubuntu/dataset/CASIA/test_session/session1/'
-label_PATH = '/home/ubuntu/dataset/CASIA/test_session/session1_label.txt'
+dataset = 'IITD'
+img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
+label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
 save_pca_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1.joblib'
 save_numpy_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1_numpy.npy'
 prepare_transform_for_image()
 palms = []
 palmmatrix = []
 palmlabel = []
-already_processed = True
+already_processed = False
 
 label_file = open(label_PATH, 'r')
 content = label_file.readlines()
@@ -71,7 +74,7 @@ if not already_processed:
             class_size = img_label
         if img_label < min_size:
             min_size = img_label
-        cur = preprocessing(Image.open(tmp_image_path).convert('L'))
+        cur = testprocessing(Image.open(tmp_image_path).convert('L'))
         # print(cur.size())
         cur = cur.permute(1, 2, 0).detach().numpy()
         palms.append(cur)
@@ -80,6 +83,7 @@ if not already_processed:
         # if i >= 20:
         #     break
         # break
+    # sys.exit()
     palmmatrix = np.array(palmmatrix)
     # PCA
     print('===start PCA!===')
@@ -123,10 +127,38 @@ eigenpalms = pca.components_[:n_components]
 weights = eigenpalms @ (palmmatrix - pca.mean_).T
 # 测试
 print('===start test!===')
-goal = 0
+goal = 4
 query = palmmatrix[goal].reshape(1, -1)
 query_weight = eigenpalms @ (query - pca.mean_).T
 euclidean_distance = np.linalg.norm(weights - query_weight, axis=0)
 best_match = np.argmin(euclidean_distance)
 print("Best match %s with Euclidean distance %f" % (palmlabel[best_match], euclidean_distance[best_match]))
 print('the correct answer is %d' % palmlabel[goal])
+
+
+# print(palmmatrix)
+# idx = 0
+# cur_correct = 0
+# total_correct = 0
+# batch = 0
+# while idx < len(palmmatrix):
+#     query = palmmatrix[idx].reshape(1, -1)
+#     query_weight = eigenpalms @ (query - pca.mean_).T
+#     # cos_similarity = calculate_cos_similar(weights,query_weight)
+#     cos_similarity = np.linalg.norm(weights - query_weight, axis=0)
+#     best_match = np.argmin(cos_similarity)
+#     # print(palmlabel[best_match])
+#     # print(len(palmlabel))
+#     # print(palmlabel[idx])
+#     # print('%d ?= %d'%(palmlabel[best_match],palmlabel[idx]))
+#     if palmlabel[best_match] == palmlabel[idx]:
+#         cur_correct+=1
+#         total_correct+=1
+#     if (idx+1)%100 == 0:
+#         print('batch %d: correct rate = %.2f'%(batch,cur_correct/100))
+#         cur_correct=0
+#         batch+=1
+#     idx += 1
+#     # break
+#
+# print('TOTAL CORRECT RATE: %.2f'%(total_correct/len(palmmatrix)))
