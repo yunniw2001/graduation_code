@@ -22,7 +22,7 @@ def prepare_transform_for_image():
     global preprocessing
     global testprocessing
     rotation = transforms.RandomRotation(5)
-    resized_cropping = transforms.Resize((112, 112))
+    resized_cropping = transforms.Resize((32, 32))
     contrast_brightness_adjustment = transforms.ColorJitter(brightness=0.5, contrast=0.5)
     color_shift = transforms.ColorJitter(hue=0.14)
     preprocessing = transforms.Compose(
@@ -48,9 +48,9 @@ def prepare_transform_for_image():
 class Gabor_filters:
     num_filters = 6
     num_points = 35
-    sigma = 1.5
+    sigma = 1.7
     filters = []
-    frequency = 0.05
+    frequency = 0.01
     band = np.pi/6
 
 
@@ -78,7 +78,9 @@ class Gabor_filters:
                 plt.subplot(2,3,temp+1)
                 plt.imshow(gabor_responses[temp],cmap='gray')
             plt.show()
-        winner = np.min(gabor_responses,axis=0)
+        winner = np.argmin(gabor_responses,axis=0)
+        # 标准化
+        winner = (winner - np.max(np.max(winner))) * -1
         output = (winner / np.max(np.max(winner))) * 255
         return output.reshape(1, -1)[0]
 
