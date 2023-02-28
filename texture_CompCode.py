@@ -1,3 +1,4 @@
+import cv2
 from scipy.signal import convolve2d
 import numpy as np
 import torchvision.transforms as transforms
@@ -9,16 +10,19 @@ from skimage.color import label2rgb
 from PIL import Image
 import matplotlib.pyplot as plt
 from sklearn.metrics.pairwise import cosine_similarity
+from skimage.filters import gabor_kernel
+from scipy import ndimage as ndi
 
 preprocessing = None
 testprocessing = None
+my_gabor_filter = None
 
 
 def prepare_transform_for_image():
     global preprocessing
     global testprocessing
     rotation = transforms.RandomRotation(5)
-    resized_cropping = transforms.Resize((224, 224))
+    resized_cropping = transforms.Resize((112, 112))
     contrast_brightness_adjustment = transforms.ColorJitter(brightness=0.5, contrast=0.5)
     color_shift = transforms.ColorJitter(hue=0.14)
     preprocessing = transforms.Compose(
@@ -41,44 +45,58 @@ def prepare_transform_for_image():
          ]
     )
 
-def extract_CompCode(image):
+class Gabor_filters:
     num_filters = 6
     num_points = 35
     sigma = 1.5
+    filters = []
+    frequency = 0.05
+    band = np.pi/6
 
-    theta_L =np.arange(1,num_filters)*np.pi/num_filters
-    (x,y) = np.meshgrid(np.arange(0,35,1),np.arange(0,35,1))
-    x0,y0 = np.shape(x)[0]/2,np.shape(y)[0]/2 # why?
-    kappa = np.sqrt(2*np.log(2))*((np.power(2,sigma)+1)/(np.power(2,sigma)-1))
-    omega = kappa/sigma
 
-    Psi = {}  # where the filters are stored
-    gabor_responses = []
-    for i in range(0, len(theta_L)):
-        xp = (x - x0) * np.cos(theta_L[i]) + (y - y0) * np.sin(theta_L[i])
-        yp = -(x - x0) * np.sin(theta_L[i]) + (y - y0) * np.cos(theta_L[i])
-        # Directional Gabor Filter
-        Psi[str(i)] = (-omega / (np.sqrt(2 * np.pi)) * kappa) * \
-                      np.exp(
-                          (-np.power(omega, 2) / (8 * np.power(kappa, 2))) * (4 * np.power(xp, 2) + np.power(yp, 2))) * \
-                      (np.cos(omega * xp) - np.exp(-np.power(kappa, 2) / 2))
+    def build_filters(self):
+        for theta in range(self.num_filters):
+            theta = theta/6. * np.pi
+            kernel = np.real(gabor_kernel(self.frequency, theta=theta,bandwidth = self.band,
+                                          sigma_x=self.sigma, sigma_y=self.sigma))
+            self.filters.append(kernel)
+        plt.figure(1)
+        for temp in range(len(self.filters)):
+            plt.subplot(2,3,temp+1)
+            plt.imshow(self.filters[temp])
+        plt.show()
 
-        # # used for debugging... #1
-        # plt.subplot(2,3,i+1)
-        # plt.imshow(Psi[str(i)], cmap='jet')
-        filtered = convolve2d(image, Psi[str(i)], mode='same', boundary='symm')
-        # # used for debugging #2
-        # plt.imshow(filtered)
-        # plt.show()
-        gabor_responses.append(filtered)
+    def extract_CompCode(self, image,show = False):
+        gabor_responses = []
+        for k,kernel in enumerate(self.filters):
+            filtered = ndi.convolve(image,kernel,mode='wrap')
+            gabor_responses.append(filtered)
+        gabor_responses = np.array(gabor_responses)
+        if show:
+            plt.figure(2)
+            for temp in range(len(gabor_responses)):
+                plt.subplot(2,3,temp+1)
+                plt.imshow(gabor_responses[temp],cmap='gray')
+            plt.show()
+        winner = np.min(gabor_responses,axis=0)
+        output = (winner / np.max(np.max(winner))) * 255
+        return output.reshape(1, -1)[0]
 
-    # plt.show() #1
-    gabor_responses = np.array(gabor_responses)
+    def power(self,image):
+        res = []
+        for kernel in self.filters:
+            res.append(np.sqrt(ndi.convolve(image,np.real(kernel),mode='wrap')**2+ndi.convolve(image,np.imag(kernel),mode='wrap')**2))
+        plt.figure(3)
+        for temp in range(len(res)):
+            plt.subplot(2, 3, temp + 1)
+            plt.imshow(res[temp], cmap='gray')
+        plt.show()
 
-    compcode_orientations = np.argmin(gabor_responses, axis=0)
-    compcode_magnitude = np.min(gabor_responses, axis=0)
+my_gabor_filter = Gabor_filters()
+my_gabor_filter.build_filters()
 
-    return compcode_orientations, compcode_magnitude
+
+
 
 def read_image_and_label(labelpath, imgpath, state='train'):
     label_file = open(labelpath, 'r')
@@ -98,7 +116,13 @@ def read_image_and_label(labelpath, imgpath, state='train'):
             cur = testprocessing(Image.open(tmp_image_path).convert('L'))
         # print(cur.size())
         cur = cur.numpy()[0]
-        cur_code,_ = extract_CompCode(cur)
+        if num ==0 and state == 'train':
+            cur_code = my_gabor_filter.extract_CompCode(cur,True)
+            my_gabor_filter.power(cur)
+            num+=1
+        else:
+            cur_code = my_gabor_filter.extract_CompCode(cur)
+        # print(cur_code.shape)
         code_g.append(cur_code)
         labels.append(img_label)
         num+=1
@@ -107,7 +131,7 @@ def read_image_and_label(labelpath, imgpath, state='train'):
     return code_g, labels
 
 
-dataset = 'IITD'
+dataset = 'tongji'
 # 读入图像
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
@@ -130,18 +154,18 @@ if not already_processed:
 else:
     code_gallery = np.load(save_gallery)
     palmlabel = np.load(save_label)
-# print(len(lbp_gallery))
-# print(image.shape)
-# plt.imshow(lbp,'gray')
-# plt.show()
-print('===DONE!===')
-
+# # print(len(lbp_gallery))
+# # print(image.shape)
+# # plt.imshow(lbp,'gray')
+# # plt.show()
+# print('===DONE!===')
+#
 # 测试
 print('===start test!===')
 testimg_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2/'
 testlabel_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2_label.txt'
 print('===start load test image!===')
-test_code_gallery, test_labels = read_image_and_label(testlabel_PATH, testimg_PATH)
+test_code_gallery, test_labels = read_image_and_label(testlabel_PATH, testimg_PATH,'test')
 print(len(test_code_gallery))
 print('===load success! generate code success!===')
 
@@ -152,9 +176,9 @@ cur_correct = 0
 total_correct = 0
 batch = 0
 while idx < len(test_code_gallery):
-    tmp_code = test_code_gallery[idx].reshape(1, -1)
-    # print(tmp_hist.shape)
-    # print(hist_gallery.shape)
+    tmp_code = test_code_gallery[idx].reshape(1,-1)
+    # print(tmp_code.shape)
+    # print(code_gallery.shape)
     cos_similarity = cosine_similarity(code_gallery, tmp_code)
     # print(cos_similarity.shape)
     best_match = np.argmax(cos_similarity)
