@@ -212,7 +212,7 @@ with torch.no_grad():
     # print(feature_gallery.shape)
     # print(palmmatrix.shape)
     classic_cca = CCA(n_components=80)
-    dl_cca = CCA(n_components=125)
+    dl_cca = CCA(n_components=60)
     # print(code_gallery.shape)
     # print(weights.shape)
     classic_cca.fit(code_gallery, weights)
