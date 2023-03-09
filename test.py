@@ -68,7 +68,8 @@ lr = 0.001
 epochs = 1000
 
 prepare_transform_for_image()
-root_path = '/home/ubuntu/dataset/IITD/test_session/'
+dataset = 'tongji'
+root_path = '/home/ubuntu/dataset/'+dataset+'/test_session/'
 session1_dataset = MyDataset(root_path+'session1/',
                              root_path+'session1_label.txt', gallery_preprocessing)
 session2_dataset = MyDataset(root_path+'session2/',

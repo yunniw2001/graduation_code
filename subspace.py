@@ -21,7 +21,7 @@ def prepare_transform_for_image():
     global preprocessing
     global testprocessing
     rotation = transforms.RandomRotation(5)
-    resized_cropping = transforms.Resize((224, 224))
+    resized_cropping = transforms.Resize((32, 32))
     contrast_brightness_adjustment = transforms.ColorJitter(brightness=0.5, contrast=0.5)
     smooth_or_sharpening = transforms.RandomChoice([
         MeanFiltersTransform(),
@@ -50,7 +50,7 @@ def prepare_transform_for_image():
 
 
 # 读入图像
-dataset = 'IITD'
+dataset = 'CASIA'
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
 save_pca_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1.joblib'
@@ -85,6 +85,7 @@ if not already_processed:
         # break
     # sys.exit()
     palmmatrix = np.array(palmmatrix)
+    print(palmmatrix.shape)
     # PCA
     print('===start PCA!===')
     pca = PCA().fit(palmmatrix)

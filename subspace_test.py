@@ -20,7 +20,7 @@ def prepare_transform_for_image():
     global preprocessing
     global testprocessing
     rotation = transforms.RandomRotation(5)
-    resized_cropping = transforms.Resize((224, 224))
+    resized_cropping = transforms.Resize((32, 32))
     contrast_brightness_adjustment = transforms.ColorJitter(brightness=0.5, contrast=0.5)
     smooth_or_sharpening = transforms.RandomChoice([
         MeanFiltersTransform(),
@@ -36,22 +36,18 @@ def prepare_transform_for_image():
             transforms.RandomApply(
                 [rotation, contrast_brightness_adjustment, smooth_or_sharpening, color_shift], 0.6),
             resized_cropping,
-            transforms.Grayscale(),
             transforms.ToTensor(),
             transforms.Normalize(0.5, 0.5)
         ]
     )
     testprocessing = transforms.Compose(
         [resized_cropping,
-         transforms.Grayscale(),
          transforms.ToTensor(),
-         transforms.Normalize(0.5, 0.5)
-         ]
-    )
+         transforms.Normalize(0.5, 0.5)])
 
 
 # 读入图片
-dataset = 'IITD'
+dataset = 'CASIA'
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2_label.txt'
 gallery_label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
@@ -83,7 +79,7 @@ for line in content:
     testmatrix.append(cur.flatten())
     testlabel.append(img_label)
 testmatrix = np.array(testmatrix)
-print(testmatrix)
+print(testmatrix.shape)
 # print(testlabel)
 # print(palmmatrix.shape)
 print('===%d images Done! %d classes in total!===' % (len(content), class_size - min_size + 1))
@@ -115,6 +111,7 @@ total_correct = 0
 batch = 0
 while idx < len(testmatrix):
     query = testmatrix[idx].reshape(1, -1)
+    # print(query.shape)
     query_weight = eigenpalms @ (query - pca.mean_).T
     # print(query_weight.shape)
     # print(weights.shape)

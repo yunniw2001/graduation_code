@@ -1,3 +1,5 @@
+import sys
+
 import cv2
 from scipy.signal import convolve2d
 import numpy as np
@@ -12,6 +14,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics.pairwise import cosine_similarity
 from skimage.filters import gabor_kernel
 from scipy import ndimage as ndi
+from sklearn.decomposition import PCA
 
 preprocessing = None
 testprocessing = None
@@ -133,7 +136,7 @@ def read_image_and_label(labelpath, imgpath, state='train'):
     return code_g, labels
 
 
-dataset = 'tongji'
+dataset = 'IITD'
 # 读入图像
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
@@ -169,8 +172,19 @@ testlabel_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2_label.t
 print('===start load test image!===')
 test_code_gallery, test_labels = read_image_and_label(testlabel_PATH, testimg_PATH,'test')
 print(len(test_code_gallery))
+test_code_gallery = np.array(test_code_gallery)
 print('===load success! generate code success!===')
 
+print('===start PCA!===')
+# pca = PCA(n_components=200)
+
+# print(code_gallery.shape)
+# print(code_gallery.shape)
+# code_gallery = pca.fit_transform(code_gallery)
+# test_code_gallery = pca.fit_transform(test_code_gallery)
+print(code_gallery.shape)
+print(test_code_gallery.shape)
+# sys.exit()
 
 print('===start recognition===')
 idx = 0

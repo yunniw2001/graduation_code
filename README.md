@@ -28,6 +28,6 @@
 
     ![image-20221224163140306](/Users/wuyihang/Library/CloudStorage/OneDrive-个人/my_idea/img/image-20221224163140306.png)
 - 方向特征：竞争编码
-  - IITD：89%
-  - CASIA：74%
-  - tongji：52%
+  - IITD：90%
+  - CASIA：69%
+  - tongji：71%
