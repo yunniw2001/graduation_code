@@ -152,6 +152,10 @@ def read_image_and_label(dataloader):
     print("===completed!===")
     return code_g, testmatrix, labels
 
+def balance_dimension(matrix_a,matrix_b):
+    mixed = np.append(matrix_a, matrix_b, axis=1)
+    return np.split(mixed, 2, axis=1)
+
 
 
 batch_size = 40
@@ -164,7 +168,7 @@ prepare_transform_for_image()
 my_gabor_filter = Gabor_filters()
 my_gabor_filter.build_filters()
 
-dataset = 'tongji'
+dataset = 'CASIA'
 root_path = '/home/ubuntu/dataset/'+dataset+'/test_session/'
 session1_dataset = MyDataset(root_path+'session1/',
                              root_path+'session1_label.txt', testprocessing)
@@ -172,6 +176,7 @@ session2_dataset = MyDataset(root_path+'session2/',
                              root_path+'session2_label.txt', testprocessing)
 session1_dataloader = DataLoader(dataset=session1_dataset, batch_size=batch_size, shuffle=False)
 session2_dataloader = DataLoader(dataset=session2_dataset, batch_size=batch_size, shuffle=True)
+if_need_balance=False
 # train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 # net = ResNet.resnet34()
 # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -195,13 +200,20 @@ with torch.no_grad():
     weights = weights.T
     print("===completed!===")
 
+    if if_need_balance:
+        print('===begin balance feature dimension===')
+        code_gallery,weights =balance_dimension(code_gallery,weights)
+        print(code_gallery.shape)
+        print(weights.shape)
+
+
     print('===start merge features!===')
 
     # print(feature_gallery.shape)
     # print(palmmatrix.shape)
     cca = CCA(n_components=125)
-    print(code_gallery.shape)
-    print(weights.shape)
+    # print(code_gallery.shape)
+    # print(weights.shape)
     cca.fit(code_gallery,weights)
     # dl_r,pca_r = cca.x_weights_,cca.y_weights_
     # print(dl_r.shape)
@@ -218,6 +230,8 @@ with torch.no_grad():
     query = eigenpalms @ (testmatrix-pca.mean_).T
     query = query.T
 
+    if if_need_balance:
+        test_code_feature,query=balance_dimension(test_code_feature,query)
     test_code_cca,test_pca_cca = cca.transform(test_code_feature,query)
     test_merge = np.append(test_code_cca,test_pca_cca,axis=1)
     idx = 0

@@ -50,7 +50,7 @@ def prepare_transform_for_image():
 
 
 # 读入图像
-dataset = 'CASIA'
+dataset = 'tongji'
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
 save_pca_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1.joblib'
