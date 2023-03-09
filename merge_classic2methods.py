@@ -63,6 +63,7 @@ def read_image_and_label(labelpath, imgpath, state='train'):
         cur = testprocessing(Image.open(tmp_image_path).convert('L'))
         # print(cur.size())
         tmp = cur.numpy()[0]
+        print(tmp.shape)
         cur_code = my_gabor_filter.extract_CompCode(tmp)
 
         cur = cur.permute(1, 2, 0).detach().numpy()
