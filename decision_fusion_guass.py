@@ -13,10 +13,10 @@ from ArcFace import ArcFace
 from my_transformer import MeanFiltersTransform, MedianFiltersTransform, GaussFiltersTransform, \
     GaussianFiltersTransformUnsharpMask, MedianFiltersTransformUnsharpMask, MeanFiltersTransformUnsharpMask, MyDataset
 from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy import ndimage as ndi
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-
+from joblib import dump, load
 
 # random apply preprocessing
 preprocessing = []
@@ -158,6 +158,37 @@ def balance_dimension(matrix_a,matrix_b):
     mixed = np.append(matrix_a, matrix_b, axis=1)
     return np.split(mixed, 2, axis=1)
 
+def vote(vote_box:dict,matrix,vector,weight):
+    cos_similarity = cosine_similarity(matrix, vector)
+    best_match = np.argmax(cos_similarity)
+    if vote_box.get(best_match):
+        vote_box[best_match] += weight
+    else:
+        vote_box[best_match] = weight
+    return vote_box
+
+def calculate_weight(accuracy):
+    accuracy = np.array(accuracy)
+    # normalization
+    tot = sum(accuracy)
+    x = accuracy/tot
+    # beta_k
+    accuracy_mean = np.mean(accuracy)
+    sigma = np.sqrt(np.sum(np.power(accuracy-accuracy_mean,2)))
+    miu = np.fabs(1-2.5*sigma)
+    beta = np.exp(-np.power(x-miu,2)/(2*(sigma**2)))/(sigma*np.sqrt(2*np.pi))
+    print(beta)
+    return beta[0],beta[1],beta[2]
+
+def feature_standard(X):
+    X -= np.mean(X, axis=0)
+    X /= np.std(X, axis=0)
+    return X
+
+def feature_norm(X):
+    _range = np.max(X,axis=0) - np.min(X,axis=0)
+    return (X - np.min(X,axis=0)) / _range
+
 
 
 batch_size = 40
@@ -171,6 +202,8 @@ my_gabor_filter = Gabor_filters()
 my_gabor_filter.build_filters()
 
 dataset = 'IITD'
+model_folder = '/home/ubuntu/graduation_model/merge/'+dataset+'/'
+already_prepared = False
 root_path = '/home/ubuntu/dataset/'+dataset+'/test_session/'
 session1_dataset = MyDataset(root_path+'session1/',
                              root_path+'session1_label.txt', testprocessing)
@@ -182,7 +215,6 @@ if_need_balance=False
 # train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 net = ResNet.resnet34()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-# device = "cpu"
 net.to(device)
 
 # 加载参数
@@ -195,76 +227,111 @@ print("===successfully load net===")
 print("===palm print recognition test===")
 with torch.no_grad():
     # print("===start generating gallery-dl-feature===")
-    feature_gallery,code_gallery,palmmatrix,gallery_label = read_image_and_label(session1_dataloader)
-    # pca = PCA().fit(palmmatrix)
-    # n_components = 200
-    # eigenpalms = pca.components_[:n_components]
-    # weights = eigenpalms @ (palmmatrix - pca.mean_).T
-    # weights = weights.T
-    gallery_label = torch.tensor(gallery_label, device='cpu').numpy()
-    lda = LDA(n_components=80).fit(palmmatrix,gallery_label)
-    weights = lda.transform(palmmatrix)
-    print("===completed!===")
+    if not already_prepared:
+        feature_gallery,code_gallery,palmmatrix,gallery_label = read_image_and_label(session1_dataloader)
+        pca = PCA(n_components=80).fit(palmmatrix)
+        # n_components = 200
+        # eigenpalms = pca.components_[:n_components]
+        # weights = eigenpalms @ (palmmatrix - pca.mean_).T
+        # weights = weights.T
+        pca_weights = pca.transform(palmmatrix)
+        gallery_label = torch.tensor(gallery_label, device = 'cpu').numpy()
+        lda = LDA(n_components=80).fit(palmmatrix,gallery_label)
+        weights = lda.transform(palmmatrix)
+        print("===completed!===")
 
-    # if if_need_balance:
-    #     print('===begin balance feature dimension===')
-    #     code_gallery,weights =balance_dimension(code_gallery,weights)
-    #     print(code_gallery.shape)
-    #     print(weights.shape)
+        # if if_need_balance:
+        #     print('===begin balance feature dimension===')
+        #     code_gallery,weights =balance_dimension(code_gallery,weights)
+        #     print(code_gallery.shape)
+        #     print(weights.shape)
+        feature_gallery = feature_gallery.cpu().numpy()
+        feature_gallery = feature_norm(feature_gallery)
+        code_gallery = feature_norm(code_gallery)
+
+        print('===start merge features!===')
+        classic_cca = CCA(n_components=80)
+        classic_cca.fit(feature_gallery, pca_weights)
+        dl_cca,pca_cca = classic_cca.transform(feature_gallery, pca_weights)
+        merge_gallery = np.append(dl_cca,pca_cca,axis=1)
+        np.save(model_folder+'palmmatrix.npy',palmmatrix)
+        np.save(model_folder + 'gallery_label.npy', torch.tensor(gallery_label, device='cpu'))
+        np.save(model_folder+'dl_feature.npy',feature_gallery)
+        np.save(model_folder+'code_feature.npy',code_gallery)
+        dump(classic_cca,model_folder+'cca.joblib')
+        np.save(model_folder+'merge_feature.npy',merge_gallery)
+        dump(pca,model_folder+'pca.joblib')
+        dump(lda,model_folder+'lda.joblib')
+    else:
+        feature_gallery = np.load(model_folder+'dl_feature.npy')
+        code_gallery = np.load(model_folder+'code_feature.npy')
+        gallery_label = np.load(model_folder + 'gallery_label.npy')
+        merge_gallery= np.load(model_folder + 'merge_feature.npy')
+        palmmatrix = np.load(model_folder+'palmmatrix.npy')
+        classic_cca = load(model_folder+'cca.joblib')
+        lda = load(model_folder+'lda.joblib')
+        pca = load(model_folder+'pca.joblib')
+        n_components = 80
+        # eigenpalms = pca.components_[:n_components]
+        # weights = eigenpalms @ (palmmatrix - pca.mean_).T
+        # weights = weights.T
+        weights = lda.transform(palmmatrix)
+        pca_weights = pca.transform(palmmatrix)
+    weights = feature_norm(weights)
+    pca_weights = feature_norm(pca_weights)
+    # 标准化
 
 
-    print('===start merge features!===')
-    feature_gallery = feature_gallery.cpu().numpy()
-    # print(feature_gallery.shape)
-    # print(palmmatrix.shape)
-    classic_cca = CCA(n_components=80)
-    dl_cca = CCA(n_components=60)
-    # print(code_gallery.shape)
-    # print(weights.shape)
-    # code_gallery =feature_gallery
-    # weights = feature_gallery
-    classic_cca.fit(feature_gallery, weights)
-    code_cca,pca_cca = classic_cca.transform(feature_gallery, weights)
-    merge_gallery = np.append(code_cca,pca_cca,axis=1)
 
-    dl_cca.fit(code_gallery,merge_gallery)
-    dl_feature_cca,classic_feature_cca = dl_cca.transform(code_gallery,merge_gallery)
-    merge3feature_gallery = np.append(dl_feature_cca,classic_feature_cca,axis=1)
-    # merge3feature_gallery = merge_gallery
-    print(merge_gallery.shape)
-    # print(classic_feature_cca.shape)
-    print(merge3feature_gallery.shape)
     print('===start test!===')
     test_dl_feature,test_code_feature,testmatrix,testlabel = read_image_and_label(session2_dataloader)
     query = lda.transform(testmatrix)
+    pca_query = pca.transform(testmatrix)
 
-    # if if_need_balance:
-    #     test_code_feature,query=balance_dimension(test_code_feature,query)
+
     test_dl_feature = test_dl_feature.cpu().numpy()
-    # test_code_feature = test_dl_feature
-    # query = test_dl_feature
-    test_code_cca,test_pca_cca = classic_cca.transform(test_dl_feature, query)
-    test_merge = np.append(test_code_cca,test_pca_cca,axis=1)
-    # test_merge = test_code_feature
-    test_dl_cca, test_classic2_cca = dl_cca.transform(test_code_feature, test_merge)
-    merge3feature_test = np.append(test_dl_cca,test_classic2_cca,axis=1)
-    # merge3feature_test = test_merge
+    query = feature_norm(query)
+    pca_query = feature_norm(pca_query)
+    test_dl_feature = feature_norm(test_dl_feature)
+
+    test_dl_cca,test_pca_cca = classic_cca.transform(test_dl_feature, pca_query)
+    test_merge = np.append(test_dl_cca,test_pca_cca,axis=1)
+
+
+
+    # calculate dynamic weight
+    # dl_weight,lda_weight,compcode_weight = calculate_weight([0.908,0.804,0.77])
+    dl_weight, lda_weight, compcode_weight = [0.908, 0.804, 0.77]
+
+    print(dl_weight)
+
 
     idx = 0
     total_correct = 0
     cur_correct = 0
     batch = 0
-    while idx < len(test_merge):
+    while idx < len(test_dl_feature):
         # print(merge_gallery.shape)
         # print(test_merge[idx].shape)
         # break
-        cos_similarity = cosine_similarity(merge3feature_gallery,merge3feature_test[idx].reshape(1,-1))
-        best_match = np.argmax(cos_similarity)
+        vote_box = {}
+        # dl-vote
+        vote_box = vote(vote_box,feature_gallery,test_dl_feature[idx].reshape(1,-1),0.90)
+        # vote_box = vote(vote_box,merge_gallery,test_merge[idx].reshape(1,-1),dl_weight)
+        vote_box =vote(vote_box,weights,query[idx].reshape(1,-1),lda_weight)
+        # print(vote_box)
+        vote_box = vote(vote_box,code_gallery,test_code_feature[idx].reshape(1,-1),compcode_weight)
+        # print(vote_box)
+        # break
+        best_match = max(vote_box,key=vote_box.get)
         # print(best_match)
         # print('%d =? %d'%(palmlabel[best_match],test_labels[idx]))
         if gallery_label[best_match] == testlabel[idx]:
             cur_correct += 1
             total_correct += 1
+        else:
+            print(vote_box,end='')
+            print('     correct answer is :%d'%testlabel[idx])
         if (idx + 1) % 100 == 0:
             print('batch %d: correct rate = %.3f' % (batch, cur_correct / 100))
             cur_correct = 0

@@ -77,8 +77,8 @@ lr = 0.001
 epochs = 1000
 
 prepare_transform_for_image()
-train_dataset = MyDataset('/home/ubuntu/dataset/tongji/train/',
-                          '/home/ubuntu/dataset/tongji/train_label.txt', preprocessing)
+train_dataset = MyDataset('/home/ubuntu/dataset/CASIA/train/',
+                          '/home/ubuntu/dataset/CASIA/train_label.txt', preprocessing)
 train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 # train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 net = ResNet.resnet34()
@@ -107,9 +107,10 @@ flag = False
 # 加载参数
 PATH_NET = '/home/ubuntu/graduation_model/deeplearning/model_net_134.pt'
 # PATH_ARC = '/home/ubuntu/graduation_model/deeplearning/model_arcloss_139.pt'
-flag = True
+flag = False
 print("===start load param===")
-net.load_state_dict(torch.load(PATH_NET))
+if flag == True:
+    net.load_state_dict(torch.load(PATH_NET))
 net.train()
 # param = torch.load(PATH_ARC)
 print("===successfully load net===")
@@ -120,7 +121,7 @@ while epoch < epochs:
     running_loss = 0.0
     accuracy = 0.0
     if flag == True:
-        epoch, per_idx, train_idx, train_loss, train_accuracy = read_txt('/home/ubuntu/graduation_model/deeplearning/data.txt')
+        epoch, per_idx, train_idx, train_loss, train_accuracy = read_txt('/home/ubuntu/graduation_model/deeplearning/CASIA_data.txt')
         # epoch, per_idx, train_idx, train_loss,train_accuracy = read_txt('/home/ubuntu/project/data_v1.0.txt')
         flag = False
     for i, data in enumerate(train_dataloader):
@@ -150,9 +151,9 @@ while epoch < epochs:
             per_idx += 1
             running_loss = 0
     if (epoch + 1) % 15 == 0:
-        save_path = '/home/ubuntu/graduation_model/deeplearning/data.txt'
+        save_path = '/home/ubuntu/graduation_model/deeplearning/CASIA_data.txt'
         make_text_save(save_path, epoch, per_idx, train_idx, train_loss, train_accuracy)
-        PATH = "/home/ubuntu/graduation_model/deeplearning/model_net_" + str(epoch) + ".pt"
+        PATH = "/home/ubuntu/graduation_model/deeplearning/CASIA/model_net_" + str(epoch) + ".pt"
         # Save
         torch.save(net.state_dict(), PATH)
     epoch+=1

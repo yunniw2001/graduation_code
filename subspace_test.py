@@ -11,6 +11,9 @@ from PIL import Image
 from sklearn.decomposition import PCA
 from joblib import dump, load
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.svm import SVC
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+
 
 preprocessing = None
 testprocessing = None
@@ -47,12 +50,15 @@ def prepare_transform_for_image():
 
 
 # 读入图片
-dataset = 'CASIA'
+dataset = 'IITD'
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2_label.txt'
 gallery_label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
 save_pca_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1.joblib'
 save_numpy_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1_numpy.npy'
+save_svm_PATH = '/home/ubuntu/graduation_model/merge/'+dataset+'/svm.joblib'
+save_kpca_PATH = '/home/ubuntu/graduation_model/kpca_palmmatrix_test_session1.joblib'
+save_lda_PATH = '/home/ubuntu/graduation_model/lda_palmmatrix_test_session1.joblib'
 prepare_transform_for_image()
 # palms = []
 palmmatrix = []
@@ -95,12 +101,26 @@ for line in content:
 print('===start load pca!===')
 palmmatrix = np.load(save_numpy_PATH)
 pca = load(save_pca_PATH)
+kpca = load(save_kpca_PATH)
+lda = load(save_lda_PATH)
 # 生成特征脸
-n_components = 50
+n_components = 80
 eigenpalms = pca.components_[:n_components]
 
 # 权重
-weights = eigenpalms @ (palmmatrix - pca.mean_).T
+# weights = eigenpalms @ (palmmatrix - pca.mean_).T
+# weights = weights.T
+# print(weights.shape)
+# kpca_weights = kpca.eigenvectors_[:,:80]
+# print(kpca_weights.shape)
+# merge_sub_gallery = np.append(weights,kpca_weights,axis=1)
+weights = lda.transform(palmmatrix)
+print(weights.shape)
+
+# 训练svm
+svm = SVC(kernel='rbf')
+svm.fit(weights,palmlabel)
+dump(svm,save_svm_PATH)
 
 # 测试
 print('===start test!===')
@@ -109,27 +129,40 @@ idx = 0
 cur_correct = 0
 total_correct = 0
 batch = 0
-while idx < len(testmatrix):
-    query = testmatrix[idx].reshape(1, -1)
+# query_kpca = kpca.transform(testmatrix)
+# query = pca.transform(testmatrix)
+# test_sub = np.append(query,query_kpca,axis=1)
+query = lda.transform(testmatrix)
+print(query.shape)
+# print(query_kpca.shape)
+while idx < len(query):
+    # query = testmatrix[idx].reshape(1, -1)
     # print(query.shape)
-    query_weight = eigenpalms @ (query - pca.mean_).T
+    # query_weight = eigenpalms @ (query - pca.mean_).T
+
+    # print(query_weight.shape)
     # print(query_weight.shape)
     # print(weights.shape)
     # cos_similarity = calculate_cos_similar(weights,query_weight)
-    cos_similarity = cosine_similarity(weights.T,query_weight.T)
-    best_match = np.argmax(cos_similarity)
+    # cos_similarity = cosine_similarity(weights,query[idx].reshape(1,-1))
+    # best_match = np.argmax(cos_similarity)
+    best_match = svm.predict(query[idx].reshape(1,-1))
+    # print(best_match)
+    # print(best_match)
     # print(palmlabel[best_match])
     # print(len(palmlabel))
     # print(palmlabel[idx])
     # print('%d ?= %d'%(palmlabel[best_match],testlabel[idx]))
-    if palmlabel[best_match] == testlabel[idx]:
+    # print('%d ?= %d'%(palmlabel[best_match],testlabel[idx]))
+    # if palmlabel[best_match] == testlabel[idx]:
+    if best_match[0] == testlabel[idx]:
         cur_correct+=1
         total_correct+=1
     if (idx+1)%100 == 0:
-        print('batch %d: correct rate = %.2f'%(batch,cur_correct/100))
+        print('batch %d: correct rate = %.3f'%(batch,cur_correct/100))
         cur_correct=0
         batch+=1
     idx += 1
     # break
 
-print('TOTAL CORRECT RATE: %.2f'%(total_correct/len(testmatrix)))
+print('TOTAL CORRECT RATE: %.3f'%(total_correct/len(testmatrix)))
