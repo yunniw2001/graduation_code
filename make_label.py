@@ -112,12 +112,12 @@ if __name__ == '__main__':
     #     cur_path = root_path+str(item)
     #     move_to_root_dir(to_path,cur_path)
     # CASIA标签
-    # make_CASIA_test_label('/home/ubuntu/dataset/CASIA/test_session/session2/',
-    #                       '/home/ubuntu/dataset/CASIA/test_session/session2_label.txt')
+    make_CASIA_test_label('/home/ubuntu/dataset/CASIA/test_session/session1/',
+                          '/home/ubuntu/dataset/CASIA/test_session/session1_label.txt')
     # gallery分组
     # root_path = '/home/ubuntu/dataset/CASIA/'
     # make_session_CASIA(root_path+'test_ROI/',root_path+'test_session/session1/',root_path+'test_session/session2/')
     # IITD session
     # move_session_IITD('/home/ubuntu/dataset/IITD/test_session/','/home/ubuntu/dataset/IITD/test_session/')
-    make_IITD_test_label('/home/ubuntu/dataset/IITD/test_session/session2',
-                         '/home/ubuntu/dataset/IITD/test_session/session2_label.txt')
+    # make_IITD_test_label('/home/ubuntu/dataset/IITD/test_session/session2',
+    #                      '/home/ubuntu/dataset/IITD/test_session/session2_label.txt')

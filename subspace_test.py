@@ -50,7 +50,7 @@ def prepare_transform_for_image():
 
 
 # 读入图片
-dataset = 'IITD'
+dataset = 'CASIA'
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2_label.txt'
 gallery_label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
@@ -144,18 +144,11 @@ while idx < len(query):
     # print(query_weight.shape)
     # print(weights.shape)
     # cos_similarity = calculate_cos_similar(weights,query_weight)
+    best_match = svm.predict(query[idx].reshape(1,-1))
+    if best_match[0] == testlabel[idx]:
     # cos_similarity = cosine_similarity(weights,query[idx].reshape(1,-1))
     # best_match = np.argmax(cos_similarity)
-    best_match = svm.predict(query[idx].reshape(1,-1))
-    # print(best_match)
-    # print(best_match)
-    # print(palmlabel[best_match])
-    # print(len(palmlabel))
-    # print(palmlabel[idx])
-    # print('%d ?= %d'%(palmlabel[best_match],testlabel[idx]))
-    # print('%d ?= %d'%(palmlabel[best_match],testlabel[idx]))
     # if palmlabel[best_match] == testlabel[idx]:
-    if best_match[0] == testlabel[idx]:
         cur_correct+=1
         total_correct+=1
     if (idx+1)%100 == 0:

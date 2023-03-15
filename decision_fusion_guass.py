@@ -50,7 +50,8 @@ class Gabor_filters:
         winner = np.argmin(gabor_responses,axis=0)
         # 标准化
         winner = (winner - np.max(np.max(winner))) * -1
-        output = (winner / np.max(np.max(winner))) * 255
+        output = (winner / np.max(np.max(winner))) * 6
+        # output = winner
         return output.reshape(1, -1)[0]
 
     def process_images(self,images):
@@ -201,7 +202,7 @@ prepare_transform_for_image()
 my_gabor_filter = Gabor_filters()
 my_gabor_filter.build_filters()
 
-dataset = 'IITD'
+dataset = 'tongji'
 model_folder = '/home/ubuntu/graduation_model/merge/'+dataset+'/'
 already_prepared = False
 root_path = '/home/ubuntu/dataset/'+dataset+'/test_session/'
@@ -246,8 +247,8 @@ with torch.no_grad():
         #     print(code_gallery.shape)
         #     print(weights.shape)
         feature_gallery = feature_gallery.cpu().numpy()
-        feature_gallery = feature_norm(feature_gallery)
-        code_gallery = feature_norm(code_gallery)
+        # feature_gallery = feature_norm(feature_gallery)
+        # code_gallery = feature_norm(code_gallery)
 
         print('===start merge features!===')
         classic_cca = CCA(n_components=80)
@@ -277,8 +278,8 @@ with torch.no_grad():
         # weights = weights.T
         weights = lda.transform(palmmatrix)
         pca_weights = pca.transform(palmmatrix)
-    weights = feature_norm(weights)
-    pca_weights = feature_norm(pca_weights)
+    # weights = feature_norm(weights)
+    # pca_weights = feature_norm(pca_weights)
     # 标准化
 
 
@@ -290,9 +291,9 @@ with torch.no_grad():
 
 
     test_dl_feature = test_dl_feature.cpu().numpy()
-    query = feature_norm(query)
-    pca_query = feature_norm(pca_query)
-    test_dl_feature = feature_norm(test_dl_feature)
+    # query = feature_norm(query)
+    # pca_query = feature_norm(pca_query)
+    # test_dl_feature = feature_norm(test_dl_feature)
 
     test_dl_cca,test_pca_cca = classic_cca.transform(test_dl_feature, pca_query)
     test_merge = np.append(test_dl_cca,test_pca_cca,axis=1)
@@ -301,9 +302,9 @@ with torch.no_grad():
 
     # calculate dynamic weight
     # dl_weight,lda_weight,compcode_weight = calculate_weight([0.908,0.804,0.77])
-    dl_weight, lda_weight, compcode_weight = [0.908, 0.804, 0.77]
+    dl_weight, lda_weight, compcode_weight = [0.908, 0.804, 0.8]
 
-    print(dl_weight)
+    # print(dl_weight)
 
 
     idx = 0
@@ -316,8 +317,8 @@ with torch.no_grad():
         # break
         vote_box = {}
         # dl-vote
-        vote_box = vote(vote_box,feature_gallery,test_dl_feature[idx].reshape(1,-1),0.90)
-        # vote_box = vote(vote_box,merge_gallery,test_merge[idx].reshape(1,-1),dl_weight)
+        vote_box = vote(vote_box,feature_gallery,test_dl_feature[idx].reshape(1,-1),0.91)
+        vote_box = vote(vote_box,merge_gallery,test_merge[idx].reshape(1,-1),dl_weight)
         vote_box =vote(vote_box,weights,query[idx].reshape(1,-1),lda_weight)
         # print(vote_box)
         vote_box = vote(vote_box,code_gallery,test_code_feature[idx].reshape(1,-1),compcode_weight)
@@ -329,9 +330,9 @@ with torch.no_grad():
         if gallery_label[best_match] == testlabel[idx]:
             cur_correct += 1
             total_correct += 1
-        else:
-            print(vote_box,end='')
-            print('     correct answer is :%d'%testlabel[idx])
+        # else:
+        #     print(vote_box,end='')
+        #     print('     correct answer is :%d'%testlabel[idx])
         if (idx + 1) % 100 == 0:
             print('batch %d: correct rate = %.3f' % (batch, cur_correct / 100))
             cur_correct = 0

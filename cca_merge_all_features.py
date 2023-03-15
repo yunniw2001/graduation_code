@@ -104,6 +104,7 @@ def prepare_transform_for_image():
          transforms.Normalize(0.5, 0.5)])
 
 
+
 def calculate_accuracy(logits, label):
     _, pred = torch.max(logits.data, 1)
     i = 0
@@ -158,7 +159,11 @@ def balance_dimension(matrix_a,matrix_b):
     mixed = np.append(matrix_a, matrix_b, axis=1)
     return np.split(mixed, 2, axis=1)
 
-
+def cca_merge_feature(tmp_cca,feature1,feature2,mode = 'test'):
+    if not mode == 'test':
+        tmp_cca.fit(feature1,feature2)
+    cca1,cca2 = tmp_cca.transform(feature1,feature2)
+    return np.append(cca1,cca2,axis=1)
 
 batch_size = 40
 num_class = 480
@@ -203,7 +208,9 @@ with torch.no_grad():
     # weights = weights.T
     gallery_label = torch.tensor(gallery_label, device='cpu').numpy()
     lda = LDA(n_components=80).fit(palmmatrix,gallery_label)
-    weights = lda.transform(palmmatrix)
+    pca = PCA(n_components=80).fit(palmmatrix)
+    weights = pca.transform(palmmatrix)
+    # weights = lda.transform(palmmatrix)
     print("===completed!===")
 
     # if if_need_balance:
@@ -223,32 +230,21 @@ with torch.no_grad():
     # print(weights.shape)
     # code_gallery =feature_gallery
     # weights = feature_gallery
-    classic_cca.fit(feature_gallery, weights)
-    code_cca,pca_cca = classic_cca.transform(feature_gallery, weights)
-    merge_gallery = np.append(code_cca,pca_cca,axis=1)
-
-    dl_cca.fit(code_gallery,merge_gallery)
-    dl_feature_cca,classic_feature_cca = dl_cca.transform(code_gallery,merge_gallery)
-    merge3feature_gallery = np.append(dl_feature_cca,classic_feature_cca,axis=1)
-    # merge3feature_gallery = merge_gallery
-    print(merge_gallery.shape)
-    # print(classic_feature_cca.shape)
-    print(merge3feature_gallery.shape)
+    # classic_cca.fit(feature_gallery, weights)
+    # code_cca,pca_cca = classic_cca.transform(feature_gallery, weights)
+    merge_gallery = cca_merge_feature(classic_cca,feature_gallery,weights,'train')
+    # mergeallfeature_gallery = cca_merge_feature(dl_cca,merge_gallery,code_gallery,'train')
+    mergeallfeature_gallery = merge_gallery
     print('===start test!===')
     test_dl_feature,test_code_feature,testmatrix,testlabel = read_image_and_label(session2_dataloader)
-    query = lda.transform(testmatrix)
-
-    # if if_need_balance:
-    #     test_code_feature,query=balance_dimension(test_code_feature,query)
+    # query = lda.transform(testmatrix)
+    query = pca.transform(testmatrix)
     test_dl_feature = test_dl_feature.cpu().numpy()
-    # test_code_feature = test_dl_feature
-    # query = test_dl_feature
-    test_code_cca,test_pca_cca = classic_cca.transform(test_dl_feature, query)
-    test_merge = np.append(test_code_cca,test_pca_cca,axis=1)
-    # test_merge = test_code_feature
-    test_dl_cca, test_classic2_cca = dl_cca.transform(test_code_feature, test_merge)
-    merge3feature_test = np.append(test_dl_cca,test_classic2_cca,axis=1)
-    # merge3feature_test = test_merge
+
+    test_merge = cca_merge_feature(classic_cca,test_dl_feature,query)
+
+    # mergeallfeature_test = cca_merge_feature(dl_cca,test_merge,test_code_feature)
+    mergeallfeature_test = test_merge
 
     idx = 0
     total_correct = 0
@@ -258,7 +254,7 @@ with torch.no_grad():
         # print(merge_gallery.shape)
         # print(test_merge[idx].shape)
         # break
-        cos_similarity = cosine_similarity(merge3feature_gallery,merge3feature_test[idx].reshape(1,-1))
+        cos_similarity = cosine_similarity(mergeallfeature_gallery,mergeallfeature_test[idx].reshape(1,-1))
         best_match = np.argmax(cos_similarity)
         # print(best_match)
         # print('%d =? %d'%(palmlabel[best_match],test_labels[idx]))

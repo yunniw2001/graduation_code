@@ -84,7 +84,8 @@ class Gabor_filters:
         winner = np.argmin(gabor_responses,axis=0)
         # 标准化
         winner = (winner - np.max(np.max(winner))) * -1
-        output = (winner / np.max(np.max(winner))) * 255
+        output = (winner / np.max(np.max(winner))) * 6
+        # output = winner
         return output.reshape(1, -1)[0]
 
     def power(self,image):
@@ -136,7 +137,7 @@ def read_image_and_label(labelpath, imgpath, state='train'):
     return code_g, labels
 
 
-dataset = 'tongji'
+dataset = 'IITD'
 # 读入图像
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
@@ -204,8 +205,8 @@ while idx < len(test_code_gallery):
         cur_correct += 1
         total_correct += 1
     if (idx + 1) % 100 == 0:
-        print('batch %d: correct rate = %.2f' % (batch, cur_correct / 100))
+        print('batch %d: correct rate = %.3f' % (batch, cur_correct / 100))
         cur_correct = 0
         batch += 1
     idx += 1
-print('TOTAL CORRECT RATE: %.2f' % (total_correct / len(test_code_gallery)))
+print('TOTAL CORRECT RATE: %.3f' % (total_correct / len(test_code_gallery)))
