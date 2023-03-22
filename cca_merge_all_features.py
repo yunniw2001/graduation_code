@@ -208,7 +208,7 @@ with torch.no_grad():
     # weights = weights.T
     gallery_label = torch.tensor(gallery_label, device='cpu').numpy()
     lda = LDA(n_components=80).fit(palmmatrix,gallery_label)
-    pca = PCA(n_components=80).fit(palmmatrix)
+    pca = PCA(n_components=120).fit(palmmatrix)
     weights = pca.transform(palmmatrix)
     # weights = lda.transform(palmmatrix)
     print("===completed!===")
@@ -224,7 +224,7 @@ with torch.no_grad():
     feature_gallery = feature_gallery.cpu().numpy()
     # print(feature_gallery.shape)
     # print(palmmatrix.shape)
-    classic_cca = CCA(n_components=80)
+    classic_cca = CCA(n_components=120)
     dl_cca = CCA(n_components=60)
     # print(code_gallery.shape)
     # print(weights.shape)

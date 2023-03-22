@@ -150,7 +150,7 @@ palmlabel = np.load(save_label)
 print('===start load pca!===')
 palmmatrix = np.load(save_numpy_PATH)
 pca = load(save_pca_PATH)
-n_components = 50
+n_components = 120
 eigenpalms = pca.components_[:n_components]
 weights = eigenpalms @ (palmmatrix - pca.mean_).T
 weights = weights.T

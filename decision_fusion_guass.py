@@ -202,7 +202,7 @@ prepare_transform_for_image()
 my_gabor_filter = Gabor_filters()
 my_gabor_filter.build_filters()
 
-dataset = 'tongji'
+dataset = 'IITD'
 model_folder = '/home/ubuntu/graduation_model/merge/'+dataset+'/'
 already_prepared = False
 root_path = '/home/ubuntu/dataset/'+dataset+'/test_session/'
@@ -230,7 +230,7 @@ with torch.no_grad():
     # print("===start generating gallery-dl-feature===")
     if not already_prepared:
         feature_gallery,code_gallery,palmmatrix,gallery_label = read_image_and_label(session1_dataloader)
-        pca = PCA(n_components=80).fit(palmmatrix)
+        pca = PCA(n_components=120).fit(palmmatrix)
         # n_components = 200
         # eigenpalms = pca.components_[:n_components]
         # weights = eigenpalms @ (palmmatrix - pca.mean_).T
@@ -251,7 +251,7 @@ with torch.no_grad():
         # code_gallery = feature_norm(code_gallery)
 
         print('===start merge features!===')
-        classic_cca = CCA(n_components=80)
+        classic_cca = CCA(n_components=120)
         classic_cca.fit(feature_gallery, pca_weights)
         dl_cca,pca_cca = classic_cca.transform(feature_gallery, pca_weights)
         merge_gallery = np.append(dl_cca,pca_cca,axis=1)
@@ -302,7 +302,7 @@ with torch.no_grad():
 
     # calculate dynamic weight
     # dl_weight,lda_weight,compcode_weight = calculate_weight([0.908,0.804,0.77])
-    dl_weight, lda_weight, compcode_weight = [0.908, 0.804, 0.8]
+    dl_weight,merge_weight, lda_weight, compcode_weight = [0.90,0.901, 0.804, 0.8]
 
     # print(dl_weight)
 
@@ -317,8 +317,8 @@ with torch.no_grad():
         # break
         vote_box = {}
         # dl-vote
-        vote_box = vote(vote_box,feature_gallery,test_dl_feature[idx].reshape(1,-1),0.91)
-        vote_box = vote(vote_box,merge_gallery,test_merge[idx].reshape(1,-1),dl_weight)
+        vote_box = vote(vote_box,feature_gallery,test_dl_feature[idx].reshape(1,-1),dl_weight)
+        vote_box = vote(vote_box,merge_gallery,test_merge[idx].reshape(1,-1),merge_weight)
         vote_box =vote(vote_box,weights,query[idx].reshape(1,-1),lda_weight)
         # print(vote_box)
         vote_box = vote(vote_box,code_gallery,test_code_feature[idx].reshape(1,-1),compcode_weight)

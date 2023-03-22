@@ -72,7 +72,7 @@ def read_image_and_label(labelpath, imgpath, state='train'):
 
 radius = 1
 n_points = 8 * radius
-dataset = 'IITD'
+dataset = 'CASIA'
 # 读入图像
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'

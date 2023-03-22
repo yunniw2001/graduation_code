@@ -105,7 +105,7 @@ kpca = load(save_kpca_PATH)
 lda = load(save_lda_PATH)
 # 生成特征脸
 n_components = 80
-eigenpalms = pca.components_[:n_components]
+# eigenpalms = pca.components_[:n_components]
 
 # 权重
 # weights = eigenpalms @ (palmmatrix - pca.mean_).T
@@ -115,12 +115,13 @@ eigenpalms = pca.components_[:n_components]
 # print(kpca_weights.shape)
 # merge_sub_gallery = np.append(weights,kpca_weights,axis=1)
 weights = lda.transform(palmmatrix)
-print(weights.shape)
+# print(weights.shape)
+# weights = pca.transform(palmmatrix)
 
 # 训练svm
-svm = SVC(kernel='rbf')
-svm.fit(weights,palmlabel)
-dump(svm,save_svm_PATH)
+# svm = SVC(kernel='rbf')
+# svm.fit(weights,palmlabel)
+# dump(svm,save_svm_PATH)
 
 # 测试
 print('===start test!===')
@@ -133,7 +134,7 @@ batch = 0
 # query = pca.transform(testmatrix)
 # test_sub = np.append(query,query_kpca,axis=1)
 query = lda.transform(testmatrix)
-print(query.shape)
+# print(query.shape)
 # print(query_kpca.shape)
 while idx < len(query):
     # query = testmatrix[idx].reshape(1, -1)
@@ -144,11 +145,11 @@ while idx < len(query):
     # print(query_weight.shape)
     # print(weights.shape)
     # cos_similarity = calculate_cos_similar(weights,query_weight)
-    best_match = svm.predict(query[idx].reshape(1,-1))
-    if best_match[0] == testlabel[idx]:
-    # cos_similarity = cosine_similarity(weights,query[idx].reshape(1,-1))
-    # best_match = np.argmax(cos_similarity)
-    # if palmlabel[best_match] == testlabel[idx]:
+    # best_match = svm.predict(query[idx].reshape(1,-1))
+    # if best_match[0] == testlabel[idx]:
+    cos_similarity = cosine_similarity(weights,query[idx].reshape(1,-1))
+    best_match = np.argmax(cos_similarity)
+    if palmlabel[best_match] == testlabel[idx]:
         cur_correct+=1
         total_correct+=1
     if (idx+1)%100 == 0:
