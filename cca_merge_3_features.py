@@ -180,7 +180,7 @@ prepare_transform_for_image()
 my_gabor_filter = Gabor_filters()
 my_gabor_filter.build_filters()
 
-dataset = 'tongji'
+dataset = 'IITD'
 root_path = '/home/ubuntu/dataset/'+dataset+'/test_session/'
 session1_dataset = MyDataset(root_path+'session1/',
                              root_path+'session1_label.txt', testprocessing)
@@ -188,7 +188,7 @@ session2_dataset = MyDataset(root_path+'session2/',
                              root_path+'session2_label.txt', testprocessing)
 session1_dataloader = DataLoader(dataset=session1_dataset, batch_size=batch_size, shuffle=False)
 session2_dataloader = DataLoader(dataset=session2_dataset, batch_size=batch_size, shuffle=True)
-if_need_norm=True
+if_need_balance=False
 # train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 net = ResNet.resnet34()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -196,7 +196,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 net.to(device)
 
 # 加载参数
-if_need_balance=False
+if_need_norm = True
 PATH_NET = '/home/ubuntu/graduation_model/deeplearning/model_net_419.pt'
 print("===start load param===")
 net.load_state_dict(torch.load(PATH_NET))
@@ -217,7 +217,6 @@ with torch.no_grad():
     pca = PCA(n_components=80).fit(palmmatrix)
     weights = pca.transform(palmmatrix)
     weights_lda = lda.transform(palmmatrix)
-
     print("===completed!===")
 
     # if if_need_balance:
@@ -239,7 +238,7 @@ with torch.no_grad():
         weights_lda = normalization(weights_lda)
         code_gallery = normalization(code_gallery)
     res_pca_cca = CCA(n_components=80)
-    comp_lda_cca = CCA(n_components=80)
+    # comp_lda_cca = CCA(n_components=80)
     all_cca = CCA(n_components=80)
     # print(code_gallery.shape)
     # print(weights.shape)
@@ -248,12 +247,12 @@ with torch.no_grad():
     # classic_cca.fit(feature_gallery, weights)
     # code_cca,pca_cca = classic_cca.transform(feature_gallery, weights)
     res_pca_merge = cca_merge_feature(res_pca_cca,feature_gallery,weights,'train')
-    comp_lda = cca_merge_feature(comp_lda_cca,code_gallery,weights_lda,'train')
-    all_feature = cca_merge_feature(all_cca,res_pca_merge,comp_lda,'train')
+    # comp_lda = cca_merge_feature(comp_lda_cca,code_gallery,weights_lda,'train')
+    all_feature = cca_merge_feature(all_cca,res_pca_merge,code_gallery,'train')
     # merge_gallery = cca_merge_feature(classic_cca,feature_gallery,weights,'train')
 
     # mergeallfeature_gallery = cca_merge_feature(dl_cca,merge_gallery,code_gallery,'train')
-    mergeallfeature_gallery = all_feature
+    mergeallfeature_gallery = res_pca_merge
     print('===start test!===')
     test_dl_feature,test_code_feature,testmatrix,testlabel = read_image_and_label(session2_dataloader)
     query_lda = lda.transform(testmatrix)
@@ -265,12 +264,14 @@ with torch.no_grad():
         test_code_feature = normalization(test_code_feature)
         query_lda = normalization(query_lda)
         query = normalization(query)
+
     # test_merge = cca_merge_feature(classic_cca,test_dl_feature,query)
     res_pca_test = cca_merge_feature(res_pca_cca,test_dl_feature,query)
-    comp_lda_test = cca_merge_feature(comp_lda_cca,test_code_feature,query_lda)
-    test_merge= cca_merge_feature(all_cca,res_pca_test,comp_lda_test)
+    # comp_lda_test = cca_merge_feature(comp_lda_cca,test_code_feature,query_lda)
+    test_merge= cca_merge_feature(all_cca,res_pca_test,test_code_feature)
     # mergeallfeature_test = cca_merge_feature(dl_cca,test_merge,test_code_feature)
-    mergeallfeature_test = test_merge
+    # test_merge = res_pca_test
+    mergeallfeature_test = res_pca_test
 
     idx = 0
     total_correct = 0

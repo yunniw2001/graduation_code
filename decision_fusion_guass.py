@@ -24,6 +24,11 @@ testprocessing = []
 my_gabor_filter = None
 to_greyscale = None
 
+def normalization(feature_set):
+    for i in range(len(feature_set)):  # 归一化每个特征
+        feature_set[i] = feature_set[i]/ np.linalg.norm(feature_set[i])
+    return feature_set
+
 class Gabor_filters:
     num_filters = 6
     num_points = 35
@@ -99,7 +104,8 @@ def prepare_transform_for_image():
         ]
     )
     testprocessing = transforms.Compose(
-        [resized_cropping,
+        [
+            resized_cropping,
          # transforms.Grayscale(),
          transforms.ToTensor(),
          transforms.Normalize(0.5, 0.5)])
@@ -202,7 +208,7 @@ prepare_transform_for_image()
 my_gabor_filter = Gabor_filters()
 my_gabor_filter.build_filters()
 
-dataset = 'IITD'
+dataset = 'tongji'
 model_folder = '/home/ubuntu/graduation_model/merge/'+dataset+'/'
 already_prepared = False
 root_path = '/home/ubuntu/dataset/'+dataset+'/test_session/'
@@ -213,6 +219,7 @@ session2_dataset = MyDataset(root_path+'session2/',
 session1_dataloader = DataLoader(dataset=session1_dataset, batch_size=batch_size, shuffle=False)
 session2_dataloader = DataLoader(dataset=session2_dataset, batch_size=batch_size, shuffle=True)
 if_need_balance=False
+if_need_norm = True
 # train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 net = ResNet.resnet34()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -249,6 +256,9 @@ with torch.no_grad():
         feature_gallery = feature_gallery.cpu().numpy()
         # feature_gallery = feature_norm(feature_gallery)
         # code_gallery = feature_norm(code_gallery)
+        if if_need_norm:
+            feature_gallery = normalization(feature_gallery)
+            pca_weights = normalization(pca_weights)
 
         print('===start merge features!===')
         classic_cca = CCA(n_components=120)
@@ -294,6 +304,9 @@ with torch.no_grad():
     # query = feature_norm(query)
     # pca_query = feature_norm(pca_query)
     # test_dl_feature = feature_norm(test_dl_feature)
+    if if_need_norm:
+        test_dl_feature = normalization(test_dl_feature)
+        pca_query = normalization(pca_query)
 
     test_dl_cca,test_pca_cca = classic_cca.transform(test_dl_feature, pca_query)
     test_merge = np.append(test_dl_cca,test_pca_cca,axis=1)
@@ -317,9 +330,9 @@ with torch.no_grad():
         # break
         vote_box = {}
         # dl-vote
-        vote_box = vote(vote_box,feature_gallery,test_dl_feature[idx].reshape(1,-1),dl_weight)
+        # vote_box = vote(vote_box,feature_gallery,test_dl_feature[idx].reshape(1,-1),dl_weight)
         vote_box = vote(vote_box,merge_gallery,test_merge[idx].reshape(1,-1),merge_weight)
-        vote_box =vote(vote_box,weights,query[idx].reshape(1,-1),lda_weight)
+        # vote_box =vote(vote_box,weights,query[idx].reshape(1,-1),lda_weight)
         # print(vote_box)
         vote_box = vote(vote_box,code_gallery,test_code_feature[idx].reshape(1,-1),compcode_weight)
         # print(vote_box)

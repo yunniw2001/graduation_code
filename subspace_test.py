@@ -1,3 +1,5 @@
+import sys
+
 import cv2
 import numpy as np
 import torchvision
@@ -105,6 +107,7 @@ kpca = load(save_kpca_PATH)
 lda = load(save_lda_PATH)
 # 生成特征脸
 n_components = 80
+lda = pca
 # eigenpalms = pca.components_[:n_components]
 
 # 权重
@@ -133,9 +136,17 @@ batch = 0
 # query_kpca = kpca.transform(testmatrix)
 # query = pca.transform(testmatrix)
 # test_sub = np.append(query,query_kpca,axis=1)
+print(testmatrix.shape)
+plt.scatter(testmatrix[:, 0], testmatrix[:, 1],marker='o',c=testlabel)
+plt.xlabel("xxxx")
+plt.show()
 query = lda.transform(testmatrix)
+print(query.shape)
+plt.scatter(query[:, 0], query[:, 1],marker='o',c=testlabel)
+plt.show()
 # print(query.shape)
 # print(query_kpca.shape)
+sys.exit()
 while idx < len(query):
     # query = testmatrix[idx].reshape(1, -1)
     # print(query.shape)
@@ -157,6 +168,6 @@ while idx < len(query):
         cur_correct=0
         batch+=1
     idx += 1
-    # break
+    break
 
 print('TOTAL CORRECT RATE: %.3f'%(total_correct/len(testmatrix)))

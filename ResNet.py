@@ -1,3 +1,5 @@
+import sys
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -42,11 +44,11 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         # conv1
         self.in_channel = 64
-        self.conv1 = nn.Conv2d(3,64,kernel_size=7,stride=2,bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         # conv2_x
-        self.maxpool = nn.MaxPool2d(kernel_size=3,stride=2)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2)
         self.layer1 = self._make_layer(block, 64, layers[0])
         # conv3.x
         self.layer2 = self._make_layer(block, 128, layers[1])
@@ -56,7 +58,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3])
         self.avgpool = nn.AvgPool2d(8)
         self.fc = nn.Linear(18432, 128, bias=False)
-        self.arcLoss = ArcFace(128,480)
+        self.arcLoss = ArcFace(128, 480)
 
     def _make_layer(self, block, channel, blocks, stride=1):
         downsample = None
@@ -79,16 +81,23 @@ class ResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
+        # print(x.size())
         x = self.avgpool(x)
+        # print(x.size())
         x = x.view(x.size(0), -1)
         # print(x.size())
         feature = self.fc(x)
+        # sys.exit()
         if label is None:
             return feature, F.normalize(feature)
         else:
             logits, accuracy = self.arcLoss(feature, label)
-            return torch.log(logits),accuracy
+            return torch.log(logits), accuracy
 
 
 def resnet34():
     return ResNet(BasicBlock, [3, 4, 6, 3])
+
+
+# a = resnet34()
+# a.forward()

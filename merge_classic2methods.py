@@ -120,7 +120,7 @@ class Gabor_filters:
         for kernel in self.filters:
             res.append(np.sqrt(ndi.convolve(image,np.real(kernel),mode='wrap')**2+ndi.convolve(image,np.imag(kernel),mode='wrap')**2))
 
-dataset = 'tongji'
+dataset = 'CASIA'
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2_label.txt'
 gallery_label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'

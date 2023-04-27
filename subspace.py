@@ -53,7 +53,7 @@ def prepare_transform_for_image():
 
 
 # 读入图像
-dataset = 'tongji'
+dataset = 'CASIA'
 img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
 label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
 save_pca_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1.joblib'
@@ -120,7 +120,9 @@ else:
 # fig, axes = plt.subplots(4,5,sharex=True,sharey=True,figsize=(8,10))
 # for i in range(20):
 #     axes[i%4][i//4].imshow(palms[i], cmap="gray")
-# plt.show()
+plt.imshow(palms[1],cmap = 'gray')
+plt.xlabel("xxxx")
+plt.show()
 
 print('===%d images Done! %d classes in total!===' % (len(content), class_size - min_size + 1))
 # print(palmmatrix)
@@ -131,10 +133,10 @@ n_components = 80
 eigenpalms = pca.components_[:n_components]
 # k_eigenpalms = kpca.components_[:n_components]
 
-# fig, axes = plt.subplots(4, 4, sharex=True, sharey=True, figsize=(8, 10))
-# for i in range(16):
-#     axes[i % 4][i // 4].imshow(eigenpalms[i].reshape(224, 224), cmap="gray")
-# plt.show()
+fig, axes = plt.subplots(4, 4, sharex=True, sharey=True, figsize=(8, 10))
+for i in range(16):
+    axes[i % 4][i // 4].imshow(eigenpalms[i].reshape(32, 32), cmap="gray")
+plt.show()
 
 # 权重
 weights = eigenpalms @ (palmmatrix - pca.mean_).T
