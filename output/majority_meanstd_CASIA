@@ -1,0 +1,43 @@
+/home/ubuntu/anaconda3/envs/project/bin/python3.8 /home/ubuntu/graduation_project/feature_fusion_vote.py
+===current dataset is:CASIA and current normalization mode is mean_std===
+read session1!
+read session2!
+===start merge session1 features!===
+/home/ubuntu/anaconda3/envs/project/lib/python3.8/site-packages/sklearn/cross_decomposition/_pls.py:110: ConvergenceWarning: Maximum number of iterations reached
+  warnings.warn("Maximum number of iterations reached", ConvergenceWarning)
+===total time: 26.481254***average time: 0.010730===
+===start merge session2 features!===
+===total time: 0.062372***average time: 0.000021===
+batch 0: correct rate = 0.950
+batch 1: correct rate = 0.870
+batch 2: correct rate = 0.880
+batch 3: correct rate = 0.930
+batch 4: correct rate = 0.860
+batch 5: correct rate = 0.890
+batch 6: correct rate = 0.950
+batch 7: correct rate = 0.930
+batch 8: correct rate = 0.900
+batch 9: correct rate = 0.940
+batch 10: correct rate = 0.890
+batch 11: correct rate = 0.930
+batch 12: correct rate = 0.920
+batch 13: correct rate = 0.910
+batch 14: correct rate = 0.940
+batch 15: correct rate = 0.900
+batch 16: correct rate = 0.950
+batch 17: correct rate = 0.900
+batch 18: correct rate = 0.900
+batch 19: correct rate = 0.870
+batch 20: correct rate = 0.880
+batch 21: correct rate = 0.910
+batch 22: correct rate = 0.900
+batch 23: correct rate = 0.910
+batch 24: correct rate = 0.920
+batch 25: correct rate = 0.900
+batch 26: correct rate = 0.940
+batch 27: correct rate = 0.900
+batch 28: correct rate = 0.960
+TOTAL CORRECT RATE: 0.912
+===total time: 72.278532***average time: 0.024109===
+
+Process finished with exit code 0

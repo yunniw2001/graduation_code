@@ -1,0 +1,17 @@
+/home/ubuntu/anaconda3/envs/project/bin/python3.8 /home/ubuntu/graduation_project/feature_fusion_0.py
+===current dataset is:IITD!===
+read session1!
+read session2!
+===start merge session1 features!===
+/home/ubuntu/anaconda3/envs/project/lib/python3.8/site-packages/sklearn/cross_decomposition/_pls.py:110: ConvergenceWarning: Maximum number of iterations reached
+  warnings.warn("Maximum number of iterations reached", ConvergenceWarning)
+===total time: 18.827352***average time: 0.008186===
+===start merge session2 features!===
+===total time: 0.002664***average time: 0.000009===
+batch 0: correct rate = 0.980
+batch 1: correct rate = 0.940
+batch 2: correct rate = 0.930
+TOTAL CORRECT RATE: 0.950
+===total time: 5.203747***average time: 0.017288===
+
+Process finished with exit code 0

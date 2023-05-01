@@ -1,0 +1,12 @@
+===current dataset is:IITD and current normalization mode is unitlength===
+read session1!
+read session2!
+===start merge session1 features!===
+===total time: 101.730809***average time: 0.044231===
+===start merge session2 features!===
+===total time: 0.034420***average time: 0.000114===
+batch 0: correct rate = 0.950
+batch 1: correct rate = 0.920
+batch 2: correct rate = 0.870
+TOTAL CORRECT RATE: 0.914
+===total time: 28.646543***average time: 0.095171===

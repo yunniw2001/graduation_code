@@ -1,0 +1,13 @@
+README.md
+setup.py
+gcca/__init__.py
+gcca/bridged_cca.py
+gcca/cca.py
+gcca/gcca.py
+gcca/hierarchical_cca.py
+gcca.egg-info/PKG-INFO
+gcca.egg-info/SOURCES.txt
+gcca.egg-info/dependency_links.txt
+gcca.egg-info/not-zip-safe
+gcca.egg-info/requires.txt
+gcca.egg-info/top_level.txt

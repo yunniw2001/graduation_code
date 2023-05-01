@@ -1,0 +1,73 @@
+/home/ubuntu/anaconda3/envs/project/bin/python3.8 /home/ubuntu/graduation_project/gcca_merge_all_features.py 
+/home/ubuntu/graduation_project/output/gcca_rplc_svm_unitlength_CASIA.txt
+===current dataset is: CASIA and current mode is unitlength===
+===read session 1===
+read session1!
+read session2!
+===completed!===
+===start merge features!===
+2023-05-01 10:19:32,864 : mcca.gcca : INFO : data num is 4
+2023-05-01 10:19:32,865 : mcca.gcca : INFO : data shape x_0: (2468, 256)
+2023-05-01 10:19:32,865 : mcca.gcca : INFO : data shape x_1: (2468, 120)
+2023-05-01 10:19:32,865 : mcca.gcca : INFO : data shape x_2: (2468, 80)
+2023-05-01 10:19:32,865 : mcca.gcca : INFO : data shape x_3: (2468, 1024)
+2023-05-01 10:19:32,865 : mcca.gcca : INFO : normalizing
+2023-05-01 10:19:32,883 : mcca.gcca : INFO : calc variance & covariance matrix
+2023-05-01 10:19:32,960 : mcca.gcca : INFO : adding regularization term
+2023-05-01 10:19:32,987 : mcca.gcca : INFO : calculating generalized eigenvalue problem ( A*u = (lambda)*B*u )
+2023-05-01 10:19:33,019 : mcca.gcca : INFO : solving
+2023-05-01 10:19:33,019 : mcca.gcca : INFO : calculating eigen dimension
+2023-05-01 10:19:33,712 : mcca.gcca : INFO : calculating eigenvalues & eigenvector
+2023-05-01 10:19:44,745 : mcca.gcca : INFO : sorting eigenvalues & eigenvector
+2023-05-01 10:19:44,750 : mcca.gcca : INFO : normalization
+2023-05-01 10:19:44,756 : mcca.gcca : INFO : normalization
+2023-05-01 10:19:44,760 : mcca.gcca : INFO : normalization
+2023-05-01 10:19:44,764 : mcca.gcca : INFO : normalization
+2023-05-01 10:19:44,789 : mcca.gcca : INFO : data num is 4
+2023-05-01 10:19:44,790 : mcca.gcca : INFO : data shape x_0: (2468, 256)
+2023-05-01 10:19:44,790 : mcca.gcca : INFO : data shape x_1: (2468, 120)
+2023-05-01 10:19:44,790 : mcca.gcca : INFO : data shape x_2: (2468, 80)
+2023-05-01 10:19:44,790 : mcca.gcca : INFO : data shape x_3: (2468, 1024)
+2023-05-01 10:19:44,790 : mcca.gcca : INFO : normalizing
+2023-05-01 10:19:44,803 : mcca.gcca : INFO : transform matrices by GCCA
+===start test!===
+2023-05-01 10:19:44,855 : mcca.gcca : INFO : data num is 4
+2023-05-01 10:19:44,855 : mcca.gcca : INFO : data shape x_0: (2998, 256)
+2023-05-01 10:19:44,855 : mcca.gcca : INFO : data shape x_1: (2998, 120)
+2023-05-01 10:19:44,855 : mcca.gcca : INFO : data shape x_2: (2998, 80)
+2023-05-01 10:19:44,855 : mcca.gcca : INFO : data shape x_3: (2998, 1024)
+2023-05-01 10:19:44,855 : mcca.gcca : INFO : normalizing
+2023-05-01 10:19:44,876 : mcca.gcca : INFO : transform matrices by GCCA
+batch 0: correct rate = 0.920
+batch 1: correct rate = 0.880
+batch 2: correct rate = 0.910
+batch 3: correct rate = 0.930
+batch 4: correct rate = 0.890
+batch 5: correct rate = 0.890
+batch 6: correct rate = 0.950
+batch 7: correct rate = 0.880
+batch 8: correct rate = 0.930
+batch 9: correct rate = 0.950
+batch 10: correct rate = 0.920
+batch 11: correct rate = 0.930
+batch 12: correct rate = 0.940
+batch 13: correct rate = 0.870
+batch 14: correct rate = 0.930
+batch 15: correct rate = 0.860
+batch 16: correct rate = 0.970
+batch 17: correct rate = 0.920
+batch 18: correct rate = 0.890
+batch 19: correct rate = 0.860
+batch 20: correct rate = 0.870
+batch 21: correct rate = 0.920
+batch 22: correct rate = 0.910
+batch 23: correct rate = 0.910
+batch 24: correct rate = 0.890
+batch 25: correct rate = 0.870
+batch 26: correct rate = 0.940
+batch 27: correct rate = 0.860
+batch 28: correct rate = 0.950
+===total time: 15.756551***average time: 0.005256===
+TOTAL CORRECT RATE: 0.908
+
+Process finished with exit code 0

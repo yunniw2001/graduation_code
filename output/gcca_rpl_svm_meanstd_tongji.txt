@@ -1,0 +1,100 @@
+/home/ubuntu/anaconda3/envs/project/bin/python3.8 /home/ubuntu/graduation_project/gcca_merge_all_features.py 
+/home/ubuntu/graduation_project/output/gcca_rpl_svm_meanstd_tongji.txt
+===current dataset is: tongji and current mode is meanstd===
+===read session 1===
+read session1!
+read session2!
+===completed!===
+===start merge features!===
+2023-05-01 10:05:26,138 : mcca.gcca : INFO : data num is 3
+2023-05-01 10:05:26,139 : mcca.gcca : INFO : data shape x_0: (6000, 256)
+2023-05-01 10:05:26,139 : mcca.gcca : INFO : data shape x_1: (6000, 120)
+2023-05-01 10:05:26,139 : mcca.gcca : INFO : data shape x_2: (6000, 80)
+2023-05-01 10:05:26,139 : mcca.gcca : INFO : normalizing
+2023-05-01 10:05:26,151 : mcca.gcca : INFO : calc variance & covariance matrix
+2023-05-01 10:05:26,189 : mcca.gcca : INFO : adding regularization term
+2023-05-01 10:05:26,191 : mcca.gcca : INFO : calculating generalized eigenvalue problem ( A*u = (lambda)*B*u )
+2023-05-01 10:05:26,196 : mcca.gcca : INFO : solving
+2023-05-01 10:05:26,196 : mcca.gcca : INFO : calculating eigen dimension
+2023-05-01 10:05:26,243 : mcca.gcca : INFO : calculating eigenvalues & eigenvector
+2023-05-01 10:05:26,814 : mcca.gcca : INFO : sorting eigenvalues & eigenvector
+2023-05-01 10:05:26,815 : mcca.gcca : INFO : normalization
+2023-05-01 10:05:26,817 : mcca.gcca : INFO : normalization
+2023-05-01 10:05:26,818 : mcca.gcca : INFO : normalization
+2023-05-01 10:05:26,819 : mcca.gcca : INFO : data num is 3
+2023-05-01 10:05:26,820 : mcca.gcca : INFO : data shape x_0: (6000, 256)
+2023-05-01 10:05:26,820 : mcca.gcca : INFO : data shape x_1: (6000, 120)
+2023-05-01 10:05:26,820 : mcca.gcca : INFO : data shape x_2: (6000, 80)
+2023-05-01 10:05:26,820 : mcca.gcca : INFO : normalizing
+2023-05-01 10:05:26,830 : mcca.gcca : INFO : transform matrices by GCCA
+===start test!===
+2023-05-01 10:05:26,871 : mcca.gcca : INFO : data num is 3
+2023-05-01 10:05:26,872 : mcca.gcca : INFO : data shape x_0: (6000, 256)
+2023-05-01 10:05:26,872 : mcca.gcca : INFO : data shape x_1: (6000, 120)
+2023-05-01 10:05:26,872 : mcca.gcca : INFO : data shape x_2: (6000, 80)
+2023-05-01 10:05:26,872 : mcca.gcca : INFO : normalizing
+2023-05-01 10:05:26,882 : mcca.gcca : INFO : transform matrices by GCCA
+batch 0: correct rate = 1.000
+batch 1: correct rate = 0.990
+batch 2: correct rate = 1.000
+batch 3: correct rate = 1.000
+batch 4: correct rate = 0.990
+batch 5: correct rate = 1.000
+batch 6: correct rate = 1.000
+batch 7: correct rate = 1.000
+batch 8: correct rate = 0.990
+batch 9: correct rate = 0.990
+batch 10: correct rate = 1.000
+batch 11: correct rate = 0.990
+batch 12: correct rate = 1.000
+batch 13: correct rate = 1.000
+batch 14: correct rate = 1.000
+batch 15: correct rate = 1.000
+batch 16: correct rate = 1.000
+batch 17: correct rate = 1.000
+batch 18: correct rate = 1.000
+batch 19: correct rate = 1.000
+batch 20: correct rate = 1.000
+batch 21: correct rate = 1.000
+batch 22: correct rate = 1.000
+batch 23: correct rate = 1.000
+batch 24: correct rate = 1.000
+batch 25: correct rate = 1.000
+batch 26: correct rate = 1.000
+batch 27: correct rate = 1.000
+batch 28: correct rate = 1.000
+batch 29: correct rate = 1.000
+batch 30: correct rate = 1.000
+batch 31: correct rate = 0.990
+batch 32: correct rate = 1.000
+batch 33: correct rate = 1.000
+batch 34: correct rate = 0.990
+batch 35: correct rate = 1.000
+batch 36: correct rate = 1.000
+batch 37: correct rate = 1.000
+batch 38: correct rate = 1.000
+batch 39: correct rate = 0.990
+batch 40: correct rate = 1.000
+batch 41: correct rate = 1.000
+batch 42: correct rate = 0.990
+batch 43: correct rate = 1.000
+batch 44: correct rate = 1.000
+batch 45: correct rate = 1.000
+batch 46: correct rate = 1.000
+batch 47: correct rate = 1.000
+batch 48: correct rate = 1.000
+batch 49: correct rate = 1.000
+batch 50: correct rate = 1.000
+batch 51: correct rate = 0.990
+batch 52: correct rate = 1.000
+batch 53: correct rate = 1.000
+batch 54: correct rate = 1.000
+batch 55: correct rate = 1.000
+batch 56: correct rate = 1.000
+batch 57: correct rate = 1.000
+batch 58: correct rate = 1.000
+batch 59: correct rate = 0.990
+===total time: 45.449349***average time: 0.007575===
+TOTAL CORRECT RATE: 0.998
+
+Process finished with exit code 0

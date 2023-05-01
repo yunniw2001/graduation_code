@@ -146,7 +146,7 @@ plt.scatter(query[:, 0], query[:, 1],marker='o',c=testlabel)
 plt.show()
 # print(query.shape)
 # print(query_kpca.shape)
-sys.exit()
+# sys.exit()
 while idx < len(query):
     # query = testmatrix[idx].reshape(1, -1)
     # print(query.shape)

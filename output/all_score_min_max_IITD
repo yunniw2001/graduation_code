@@ -1,0 +1,17 @@
+/home/ubuntu/anaconda3/envs/project/bin/python3.8 /home/ubuntu/graduation_project/feature_fusion_vote.py
+===current dataset is:IITD and current normalization mode is min_max===
+read session1!
+read session2!
+===start merge session1 features!===
+/home/ubuntu/anaconda3/envs/project/lib/python3.8/site-packages/sklearn/cross_decomposition/_pls.py:110: ConvergenceWarning: Maximum number of iterations reached
+  warnings.warn("Maximum number of iterations reached", ConvergenceWarning)
+===total time: 19.273875***average time: 0.008380===
+===start merge session2 features!===
+===total time: 0.002373***average time: 0.000008===
+batch 0: correct rate = 0.820
+batch 1: correct rate = 0.800
+batch 2: correct rate = 0.710
+TOTAL CORRECT RATE: 0.777
+===total time: 5.198726***average time: 0.017272===
+
+Process finished with exit code 0

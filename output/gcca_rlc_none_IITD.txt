@@ -1,0 +1,42 @@
+/home/ubuntu/anaconda3/envs/project/bin/python3.8 /home/ubuntu/graduation_project/gcca_merge_all_features.py 
+/home/ubuntu/graduation_project/output/gcca_rlc_none_IITD.txt
+===current dataset is: IITD and current mode is none===
+===read session 1===
+read session1!
+read session2!
+===completed!===
+===start merge features!===
+2023-04-30 19:12:52,649 : mcca.gcca : INFO : data num is 3
+2023-04-30 19:12:52,650 : mcca.gcca : INFO : data shape x_0: (2300, 256)
+2023-04-30 19:12:52,650 : mcca.gcca : INFO : data shape x_1: (2300, 80)
+2023-04-30 19:12:52,650 : mcca.gcca : INFO : data shape x_2: (2300, 1024)
+2023-04-30 19:12:52,650 : mcca.gcca : INFO : normalizing
+2023-04-30 19:12:52,665 : mcca.gcca : INFO : calc variance & covariance matrix
+2023-04-30 19:12:52,725 : mcca.gcca : INFO : adding regularization term
+2023-04-30 19:12:52,751 : mcca.gcca : INFO : calculating generalized eigenvalue problem ( A*u = (lambda)*B*u )
+2023-04-30 19:12:52,778 : mcca.gcca : INFO : solving
+2023-04-30 19:12:52,778 : mcca.gcca : INFO : calculating eigen dimension
+2023-04-30 19:12:53,376 : mcca.gcca : INFO : calculating eigenvalues & eigenvector
+2023-04-30 19:13:01,328 : mcca.gcca : INFO : sorting eigenvalues & eigenvector
+2023-04-30 19:13:01,331 : mcca.gcca : INFO : normalization
+2023-04-30 19:13:01,335 : mcca.gcca : INFO : normalization
+2023-04-30 19:13:01,336 : mcca.gcca : INFO : normalization
+2023-04-30 19:13:01,352 : mcca.gcca : INFO : data num is 3
+2023-04-30 19:13:01,352 : mcca.gcca : INFO : data shape x_0: (2300, 256)
+2023-04-30 19:13:01,352 : mcca.gcca : INFO : data shape x_1: (2300, 80)
+2023-04-30 19:13:01,353 : mcca.gcca : INFO : data shape x_2: (2300, 1024)
+2023-04-30 19:13:01,353 : mcca.gcca : INFO : normalizing
+2023-04-30 19:13:01,364 : mcca.gcca : INFO : transform matrices by GCCA
+===start test!===
+2023-04-30 19:13:01,396 : mcca.gcca : INFO : data num is 3
+2023-04-30 19:13:01,396 : mcca.gcca : INFO : data shape x_0: (301, 256)
+2023-04-30 19:13:01,396 : mcca.gcca : INFO : data shape x_1: (301, 80)
+2023-04-30 19:13:01,396 : mcca.gcca : INFO : data shape x_2: (301, 1024)
+2023-04-30 19:13:01,396 : mcca.gcca : INFO : normalizing
+2023-04-30 19:13:01,398 : mcca.gcca : INFO : transform matrices by GCCA
+batch 0: correct rate = 0.970
+batch 1: correct rate = 0.930
+batch 2: correct rate = 0.860
+TOTAL CORRECT RATE: 0.920
+
+Process finished with exit code 0

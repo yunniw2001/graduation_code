@@ -1,0 +1,72 @@
+/home/ubuntu/anaconda3/envs/project/bin/python3.8 /home/ubuntu/graduation_project/feature_fusion_vote.py
+===current dataset is:tongji and current normalization mode is mean_std===
+read session1!
+read session2!
+===start merge session1 features!===
+===total time: 37.200918***average time: 0.006200===
+===start merge session2 features!===
+===total time: 0.046085***average time: 0.000008===
+batch 0: correct rate = 1.000
+batch 1: correct rate = 1.000
+batch 2: correct rate = 1.000
+batch 3: correct rate = 0.980
+batch 4: correct rate = 1.000
+batch 5: correct rate = 1.000
+batch 6: correct rate = 1.000
+batch 7: correct rate = 1.000
+batch 8: correct rate = 0.990
+batch 9: correct rate = 1.000
+batch 10: correct rate = 0.990
+batch 11: correct rate = 1.000
+batch 12: correct rate = 0.990
+batch 13: correct rate = 1.000
+batch 14: correct rate = 0.990
+batch 15: correct rate = 0.990
+batch 16: correct rate = 0.970
+batch 17: correct rate = 1.000
+batch 18: correct rate = 1.000
+batch 19: correct rate = 1.000
+batch 20: correct rate = 1.000
+batch 21: correct rate = 1.000
+batch 22: correct rate = 1.000
+batch 23: correct rate = 1.000
+batch 24: correct rate = 1.000
+batch 25: correct rate = 1.000
+batch 26: correct rate = 1.000
+batch 27: correct rate = 1.000
+batch 28: correct rate = 1.000
+batch 29: correct rate = 1.000
+batch 30: correct rate = 1.000
+batch 31: correct rate = 1.000
+batch 32: correct rate = 0.990
+batch 33: correct rate = 0.990
+batch 34: correct rate = 1.000
+batch 35: correct rate = 1.000
+batch 36: correct rate = 1.000
+batch 37: correct rate = 0.990
+batch 38: correct rate = 1.000
+batch 39: correct rate = 1.000
+batch 40: correct rate = 1.000
+batch 41: correct rate = 0.990
+batch 42: correct rate = 0.990
+batch 43: correct rate = 1.000
+batch 44: correct rate = 0.990
+batch 45: correct rate = 1.000
+batch 46: correct rate = 0.990
+batch 47: correct rate = 1.000
+batch 48: correct rate = 1.000
+batch 49: correct rate = 1.000
+batch 50: correct rate = 1.000
+batch 51: correct rate = 1.000
+batch 52: correct rate = 1.000
+batch 53: correct rate = 1.000
+batch 54: correct rate = 1.000
+batch 55: correct rate = 1.000
+batch 56: correct rate = 1.000
+batch 57: correct rate = 1.000
+batch 58: correct rate = 1.000
+batch 59: correct rate = 1.000
+TOTAL CORRECT RATE: 0.997
+===total time: 338.204472***average time: 0.056367===
+
+Process finished with exit code 0

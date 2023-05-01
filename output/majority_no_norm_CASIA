@@ -1,0 +1,51 @@
+/home/ubuntu/anaconda3/envs/project/bin/python3.8 /home/ubuntu/graduation_project/feature_fusion_vote.py
+===current dataset is:CASIA!===
+read session1!
+read session2!
+===start merge session1 features!===
+===total time: 25.422057***average time: 0.008365===
+===start merge session2 features!===
+===total time: 0.057079***average time: 0.000015===
+batch 0: correct rate = 0.910
+batch 1: correct rate = 0.970
+batch 2: correct rate = 0.930
+batch 3: correct rate = 0.910
+batch 4: correct rate = 0.880
+batch 5: correct rate = 0.900
+batch 6: correct rate = 0.890
+batch 7: correct rate = 0.970
+batch 8: correct rate = 0.850
+batch 9: correct rate = 0.920
+batch 10: correct rate = 0.880
+batch 11: correct rate = 0.950
+batch 12: correct rate = 0.940
+batch 13: correct rate = 0.910
+batch 14: correct rate = 0.890
+batch 15: correct rate = 0.920
+batch 16: correct rate = 0.860
+batch 17: correct rate = 0.900
+batch 18: correct rate = 0.870
+batch 19: correct rate = 0.940
+batch 20: correct rate = 0.920
+batch 21: correct rate = 0.890
+batch 22: correct rate = 0.920
+batch 23: correct rate = 0.920
+batch 24: correct rate = 0.850
+batch 25: correct rate = 0.940
+batch 26: correct rate = 0.970
+batch 27: correct rate = 0.900
+batch 28: correct rate = 0.900
+batch 29: correct rate = 0.880
+batch 30: correct rate = 0.900
+batch 31: correct rate = 0.940
+batch 32: correct rate = 0.950
+batch 33: correct rate = 0.930
+batch 34: correct rate = 0.900
+batch 35: correct rate = 0.920
+batch 36: correct rate = 0.950
+batch 37: correct rate = 0.940
+batch 38: correct rate = 0.890
+TOTAL CORRECT RATE: 0.913
+===total time: 94.083196***average time: 0.024019===
+
+Process finished with exit code 0

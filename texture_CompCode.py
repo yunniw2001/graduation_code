@@ -67,7 +67,7 @@ class Gabor_filters:
         for temp in range(len(self.filters)):
             plt.subplot(2,3,temp+1)
             plt.imshow(self.filters[temp])
-        plt.show()
+        # plt.show()
 
     def extract_CompCode(self, image,show = False):
         gabor_responses = []
@@ -80,7 +80,7 @@ class Gabor_filters:
             for temp in range(len(gabor_responses)):
                 plt.subplot(2,3,temp+1)
                 plt.imshow(gabor_responses[temp],cmap='gray')
-            plt.show()
+            # plt.show()
         winner = np.argmin(gabor_responses,axis=0)
         # 标准化
         winner = (winner - np.max(np.max(winner))) * -1
@@ -96,7 +96,7 @@ class Gabor_filters:
         for temp in range(len(res)):
             plt.subplot(2, 3, temp + 1)
             plt.imshow(res[temp], cmap='gray')
-        plt.show()
+        # plt.show()
 
 my_gabor_filter = Gabor_filters()
 my_gabor_filter.build_filters()
@@ -137,10 +137,10 @@ def read_image_and_label(labelpath, imgpath, state='train'):
     return code_g, labels
 
 
-dataset = 'CASIA'
+dataset = 'IITD'
 # 读入图像
-img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
-label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
+img_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session1/'
+label_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session1_label.txt'
 save_gallery = '/home/ubuntu/graduation_model/gallery_texture.npy'
 save_label = '/home/ubuntu/graduation_model/label_texture.npy'
 prepare_transform_for_image()
@@ -168,15 +168,15 @@ else:
 #
 # 测试
 print('===start test!===')
-testimg_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2/'
-testlabel_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2_label.txt'
+testimg_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session2/'
+testlabel_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session2_label.txt'
 print('===start load test image!===')
 test_code_gallery, test_labels = read_image_and_label(testlabel_PATH, testimg_PATH,'test')
 print(len(test_code_gallery))
 test_code_gallery = np.array(test_code_gallery)
 print('===load success! generate code success!===')
 
-print('===start PCA!===')
+# print('===start PCA!===')
 # pca = PCA(n_components=200)
 
 # print(code_gallery.shape)
