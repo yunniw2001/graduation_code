@@ -67,7 +67,7 @@ class Gabor_filters:
         for temp in range(len(self.filters)):
             plt.subplot(2,3,temp+1)
             plt.imshow(self.filters[temp])
-        # plt.show()
+        plt.show()
 
     def extract_CompCode(self, image,show = False):
         gabor_responses = []
@@ -96,7 +96,7 @@ class Gabor_filters:
         for temp in range(len(res)):
             plt.subplot(2, 3, temp + 1)
             plt.imshow(res[temp], cmap='gray')
-        # plt.show()
+        plt.show()
 
 my_gabor_filter = Gabor_filters()
 my_gabor_filter.build_filters()

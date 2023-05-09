@@ -82,7 +82,7 @@ feature_size = 128
 lr = 0.001
 epochs = 1000
 
-dataset = 'IITD'
+dataset = 'tongji'
 root_path = '/home/ubuntu/dataset/'+dataset+'/session/'
 if_need_norm = 'unitlength'
 vote_state = 'majority'
@@ -90,7 +90,7 @@ n_max = 5
 
 # print('===current dataset is: '+dataset+' and current mode is '+if_need_norm+'===')
 write_file_root = '/home/ubuntu/graduation_project/output/'
-write_name = 'gcca_rplc_svm_'+if_need_norm+'_'+dataset+'.txt'
+write_name = 'cca_rplc_'+if_need_norm+'_'+dataset+'.txt'
 print(write_file_root+write_name)
 file = open(write_file_root+write_name,'w')
 file.write('a')
@@ -146,16 +146,25 @@ elif if_need_norm == 'meanstd':
     pca_query = feature_standard(pca_query)
     query = feature_standard(query)
 
-
+start_time = time.perf_counter()
 cca = CCA(n_components=80)
 cca.fit(feature_gallery,pca_weights,weights,code_gallery)
-cca.transform(feature_gallery,pca_weights,weights,code_gallery)
+# a1,a2 = cca.transform(pca_weights,weights)
 mergeallfeature_gallery = np.concatenate((np.array(feature_gallery),np.array(pca_weights),np.array(weights),np.array(code_gallery)),axis=1)
+# mergeallfeature_gallery = np.append(a1,a2,axis=1)
+end_time = time.perf_counter()
+run_time = end_time-start_time
+print('===total time: %f***average time: %f==='%(run_time,run_time/len(gallery_label)))
 print('===start test!===')
-cca.transform(test_dl_feature,pca_query,query,test_code_feature)
+start_time = time.perf_counter()
+# a1,a2 = cca.transform(pca_query,query)
 mergeallfeature_test = np.concatenate((np.array(test_dl_feature),np.array(pca_query),np.array(query),np.array(test_code_feature)),axis=1)
-svm = SVC(kernel='sigmoid')
-svm.fit(mergeallfeature_gallery,gallery_label)
+# mergeallfeature_test = np.append(a1,a2,axis=1)
+end_time = time.perf_counter()
+run_time = end_time-start_time
+print('===total time: %f***average time: %f==='%(run_time,run_time/len(testlabel)))
+# svm = SVC(kernel='sigmoid')
+# svm.fit(mergeallfeature_gallery,gallery_label)
 idx = 0
 total_correct = 0
 cur_correct = 0
@@ -165,14 +174,14 @@ while idx < len(mergeallfeature_test):
     # print(merge_gallery.shape)
     # print(test_merge[idx].shape)
     # break
-    # cos_similarity = cosine_similarity(mergeallfeature_gallery,mergeallfeature_test[idx].reshape(1,-1))
-    # best_match = np.argmax(cos_similarity)
-    best_match = svm.predict(mergeallfeature_test[idx].reshape(1,-1))
-    if best_match[0] == testlabel[idx]:
+    cos_similarity = cosine_similarity(mergeallfeature_gallery,mergeallfeature_test[idx].reshape(1,-1))
+    best_match = np.argmax(cos_similarity)
+    # best_match = svm.predict(mergeallfeature_test[idx].reshape(1,-1))
+    # if best_match[0] == testlabel[idx]:
     # print(best_match)
     # print('%d =? %d'%(palmlabel[best_match],test_labels[idx]))
 
-    # if gallery_label[best_match] == testlabel[idx]:
+    if gallery_label[best_match] == testlabel[idx]:
         cur_correct += 1
         total_correct += 1
     if (idx + 1) % 100 == 0:

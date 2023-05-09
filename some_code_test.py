@@ -6,8 +6,13 @@ def vote_n_max_decision(cos_similarity,n):
     print(best_match)
     best_match = gallery_label[best_match]
     print(best_match)
-
-a = np.array([3,0,4,3,6,2,3,5])
-vote_n_max_decision(a,5)
-a.sort()
-print(a[::-1][0:5])
+def get_score_matrix(cosine_matrix,gallery,test_batch):
+    # cosine_matrix = cosine_similarity(gallery,test_batch)
+    tmp = np.argmax(cosine_matrix,axis=0)
+    tmp = np.expand_dims(tmp,axis=0)
+    out = np.zeros_like(cosine_matrix)
+    np.put_along_axis(out,tmp,1,axis=0)
+    return out
+a = np.random.randint(100, size=(3, 4))
+print(a)
+print(get_score_matrix(a,None,None))

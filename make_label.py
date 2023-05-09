@@ -149,7 +149,17 @@ def IITD_copy(from_dir,to_dir):
         if int(index)>=180:
             shutil.copy(from_dir+item,to_dir)
 
+def remove_line():
+    line = input()
+    res = []
+    while line:
+        item = line.split('_')
+        res.append(item[0].split('}')[0]+'}'+item[1])
+        line = input()
+    for i in res:
+        print(i)
 if __name__ == '__main__':
+    remove_line()
     # make_session_tongji('/home/ubuntu/dataset/tongji/images/','/home/ubuntu/dataset/tongji/session/session1/','/home/ubuntu/dataset/tongji/session/session2/')
     # make_tongji_test_label('/home/ubuntu/dataset/tongji/session/session2/',
     #                          '/home/ubuntu/dataset/tongji/session/session2_label.txt')
@@ -168,7 +178,7 @@ if __name__ == '__main__':
     # root_path = '/home/ubuntu/dataset/CASIA/'
     # make_session_CASIA('/home/ubuntu/dataset/CASIA/images/','/home/ubuntu/dataset/CASIA/session/session1/','/home/ubuntu/dataset/CASIA/session/session2/')
     # IITD session
-    move_session_IITD('/home/ubuntu/dataset/IITD/images/','/home/ubuntu/dataset/IITD/session/')
+    # move_session_IITD('/home/ubuntu/dataset/IITD/images/','/home/ubuntu/dataset/IITD/session/')
     # check_label('/home/ubuntu/dataset/IITD/session/session1/','/home/ubuntu/dataset/IITD/session/session2/','r')
     # make_IITD_test_label('/home/ubuntu/dataset/IITD/session/session1',
     #                      '/home/ubuntu/dataset/IITD/session/session1_label.txt')

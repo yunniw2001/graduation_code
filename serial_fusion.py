@@ -2,7 +2,6 @@ import numpy as np
 from skimage.filters._gabor import gabor_kernel
 # from sklearn.cross_decomposition import CCA
 from mcca.cca import CCA as CCA
-# from sklearn.cross_decomposition import CCA
 import torch
 import torchvision
 import torch.nn as nn
@@ -156,7 +155,7 @@ lr = 0.001
 epochs = 1000
 
 
-dataset = 'CASIA'
+dataset = 'tongji'
 print('===current dataset is:'+dataset+'!===')
 model_folder = '/home/ubuntu/graduation_model/merge/'+dataset+'/'
 already_prepared = True
@@ -179,7 +178,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 net.to(device)
 
 write_file_root = '/home/ubuntu/graduation_project/output/'
-write_name = 'score_'+if_need_norm+'_'+dataset+'.txt'
+write_name = 'serial_'+if_need_norm+'_'+dataset+'.txt'
 print(write_file_root+write_name)
 file = open(write_file_root+write_name,'w')
 file.write('a')
@@ -216,29 +215,16 @@ else:
 if if_need_norm =='unitlength':
     test_dl_feature = normalization(test_dl_feature)
     pca_query = normalization(pca_query)
-print('===start merge session1 features!===')
-start_time = time.perf_counter()
-classic_cca = CCA(n_components=120)
-classic_cca,merge_gallery = cca_merge(classic_cca,feature_gallery,pca_weights,'train')
-end_time = time.perf_counter()
-run_time = end_time-start_time
-print('===total time: %f***average time: %f==='%(run_time,run_time/len(gallery_label)))
-print('===start merge session2 features!===')
-start_time = time.perf_counter()
-_,test_merge = cca_merge(classic_cca,test_dl_feature,pca_query)
-end_time = time.perf_counter()
-run_time = end_time-start_time
-print('===total time: %f***average time: %f==='%(run_time,run_time/len(testlabel)))
+
+
 
 # calculate dynamic weight
 
-dl_weight,merge_weight, lda_weight, compcode_weight = [0.901,0,0.8, 0.8]
-svm_merge = SVC(kernel='sigmoid')
-# svm_merge = LinearSVC()
-svm_merge.fit(merge_gallery,gallery_label)
+np.concatenate
 # print(dl_weight)
 
-
+mergeallfeature_gallery = np.concatenate((feature_gallery,pca_weights,weights),axis=1)
+test_merge = np.concatenate((test_dl_feature,pca_query,query),axis=1)
 idx = 0
 total_correct = 0
 cur_correct = 0
@@ -248,19 +234,21 @@ while idx < len(test_dl_feature):
     # print(merge_gallery.shape)
     # print(test_merge[idx].shape)
     # break
-    vote_box = {}
+    # vote_box = {}
     # dl-vote
     # vote_box = vote(vote_box,feature_gallery,test_dl_feature[idx].reshape(1,-1),dl_weight)
     # vote_box = vote_svm(vote_box, test_merge[idx].reshape(1, -1), merge_weight,svm_merge)
-    vote_box = vote(vote_box,merge_gallery,test_merge[idx].reshape(1,-1),merge_weight)
-    vote_box =vote(vote_box,weights,query[idx].reshape(1,-1),lda_weight)
+    # vote_box = vote(vote_box,merge_gallery,test_merge[idx].reshape(1,-1),merge_weight)
+    # vote_box =vote(vote_box,weights,query[idx].reshape(1,-1),lda_weight)
     # vote_box = vote_svm(vote_box, query[idx].reshape(1, -1), lda_weight,svm_merge)
     # print(vote_box)
-    vote_box = vote(vote_box,code_gallery,test_code_feature[idx].reshape(1,-1),compcode_weight)
+    # vote_box = vote(vote_box,code_gallery,test_code_feature[idx].reshape(1,-1),compcode_weight)
     # vote_box = vote_svm(vote_box, test_code_feature[idx].reshape(1, -1), compcode_weight,svm_merge)
     # print(vote_box)
     # break
-    best_match = max(vote_box,key=vote_box.get)
+    cos_similarity = cosine_similarity(mergeallfeature_gallery, test_merge[idx].reshape(1,-1))
+    best_match = np.argmax(cos_similarity)
+    best_match = gallery_label[best_match]
     # print(best_match)
     # print('%d =? %d'%(palmlabel[best_match],test_labels[idx]))
     if best_match == testlabel[idx]:
