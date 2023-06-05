@@ -53,9 +53,9 @@ def prepare_transform_for_image():
 
 
 # 读入图像
-dataset = 'CASIA'
-img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
-label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
+dataset = 'tongji'
+img_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session1/'
+label_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session1_label.txt'
 save_pca_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1.joblib'
 save_kpca_PATH = '/home/ubuntu/graduation_model/kpca_palmmatrix_test_session1.joblib'
 save_lda_PATH = '/home/ubuntu/graduation_model/lda_palmmatrix_test_session1.joblib'
@@ -117,9 +117,9 @@ else:
         palmlabel.append(img_label)
 
 # 预览图片
-# fig, axes = plt.subplots(4,5,sharex=True,sharey=True,figsize=(8,10))
-# for i in range(20):
-#     axes[i%4][i//4].imshow(palms[i], cmap="gray")
+fig, axes = plt.subplots(4,5,sharex=True,sharey=True,figsize=(8,10))
+for i in range(20):
+    axes[i%4][i//4].imshow(palms[i], cmap="gray")
 plt.imshow(palms[1],cmap = 'gray')
 plt.xlabel("xxxx")
 plt.show()

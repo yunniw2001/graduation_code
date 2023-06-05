@@ -1,9 +1,16 @@
 import numpy as np
+from sklearn.metrics import roc_curve
+import numpy as np
 from skimage.filters._gabor import gabor_kernel
 # from sklearn.cross_decomposition import CCA
 from mcca.cca import CCA as CCA
+from scipy.optimize import brentq
+from scipy.interpolate import interp1d
+
+from sklearn.metrics import roc_curve, auc
 # from sklearn.cross_decomposition import CCA
 import torch
+from sklearn.preprocessing import normalize
 import torchvision
 import torch.nn as nn
 import torchvision.transforms as transforms
@@ -22,6 +29,29 @@ from sklearn.metrics.pairwise import cosine_similarity
 from scipy import ndimage as ndi
 from joblib import dump, load
 import time
+import matplotlib as plt
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
+
+config = {
+    "font.family":'serif',
+    "font.size": 10,
+    "mathtext.fontset":'stix',
+}
+rcParams.update(config)
+
+def calculate_cosine_similarity(features):
+    num_faces = len(features)
+    similarities = np.zeros((num_faces, num_faces))
+
+    for i in range(num_faces):
+        for j in range(i+1, num_faces):
+            # 计算余弦相似度
+            similarity = np.dot(features[i], features[j]) / (np.linalg.norm(features[i]) * np.linalg.norm(features[j]))
+            similarities[i][j] = similarities[j][i] = similarity
+
+    return similarities
+
 
 # random apply preprocessing
 preprocessing = []
@@ -118,12 +148,12 @@ def calculate_weight(accuracy):
     tot = sum(accuracy)
     x = accuracy/tot
     # beta_k
-    accuracy_mean = np.mean(accuracy)
-    sigma = np.sqrt(np.sum(np.power(accuracy-accuracy_mean,2)))
-    miu = np.fabs(1-2.5*sigma)
-    beta = np.exp(-np.power(x-miu,2)/(2*(sigma**2)))/(sigma*np.sqrt(2*np.pi))
-    print(beta)
-    return beta[0],beta[1],beta[2]
+    # accuracy_mean = np.mean(accuracy)
+    # sigma = np.sqrt(np.sum(np.power(accuracy-accuracy_mean,2)))
+    # miu = np.fabs(1-2.5*sigma)
+    # beta = np.exp(-np.power(x-miu,2)/(2*(sigma**2)))/(sigma*np.sqrt(2*np.pi))
+    # print(beta)
+    return x[0],x[1],x[2]
 
 def feature_standard(X):
     X -= np.mean(X, axis=0)
@@ -149,6 +179,46 @@ def cca_merge(tmp_cca,matrix1,matrix2,mode='test'):
     merge_gallery = np.append(cca1, cca2, axis=1)
     return tmp_cca,merge_gallery
 
+def display_one_dim(arr):
+    for i in arr:
+        print(i,end=' ')
+    print('')
+
+def compu_roc(class_in,class_each):
+    FRR = []
+    FAR = []
+    thresld = np.arange(0, 1, 0.001)  # 生成模型阈值的等差列表
+    eer = 1
+    for i in range(len(thresld)):
+        frr = np.sum(class_in < thresld[i]) / len(class_in)
+        FRR.append(frr)
+
+        far = np.sum(class_each > thresld[i]) / len(class_each)
+        FAR.append(far)
+
+        if (abs(frr - far) < 0.02):  # frr和far值相差很小时认为相等
+            eer = abs(frr + far) / 2
+    return eer
+def compute_eer(fpr,tpr,threshold):
+    # all fpr, tpr, fnr, fnr, threshold are lists (in the format of np.array)
+    fnr = 1 - tpr
+
+    # the threshold of fnr == fpr
+    eer_threshold = threshold[np.nanargmin(np.absolute((fnr - fpr)))]
+
+    # theoretically eer from fpr and eer from fnr should be identical but they can be slightly differ in reality
+    eer_1 = fpr[np.nanargmin(np.absolute((fnr - fpr)))]
+    eer_2 = fnr[np.nanargmin(np.absolute((fnr - fpr)))]
+
+    print(eer_threshold)
+    # return the mean of eer from fpr and from fnr
+    eer = (eer_1 + eer_2) / 2
+    # eer = brentq(lambda x: 1. - x - interp1d(fpr, tpr)(x), 0., 1.)
+    # thresh = interp1d(fpr, thresholds)(eer)
+    # print(thresh)
+    # eer = fpr[np.nanargmin(np.absolute((1 - tpr) - fpr))]
+    return eer
+
 def get_score_matrix(gallery,test_batch):
     cosine_matrix = cosine_similarity(gallery,test_batch)
     tmp = np.argmax(cosine_matrix,axis=0)
@@ -156,18 +226,38 @@ def get_score_matrix(gallery,test_batch):
     out = np.zeros_like(cosine_matrix)
     np.put_along_axis(out,tmp,1,axis=0)
     return out
+
+def get_positive_label(match_result,gallery_label,testlabel):
+    if_postive = np.zeros_like(match_result)
+    col, row = if_postive.shape
+    for line in range(col):
+        for j in range(row):
+            if gallery_label[line] == testlabel[j]:
+                if_postive[line][j] = 1
+    if_postive = if_postive.flatten()
+    score = match_result.flatten()
+    print(max(score))
+    return if_postive,score
+
 batch_size = 40
 num_class = 480
 feature_size = 128
 lr = 0.001
 epochs = 1000
 
+def ccosine_similarity(feature_gallery,test_feature):
+    cosine_matrix = cosine_similarity(feature_gallery,test_feature)
+    tmp = np.argmax(cosine_matrix, axis=0)
+    tmp = np.expand_dims(tmp, axis=0)
+    out = np.zeros_like(cosine_matrix)
+    np.put_along_axis(out, tmp, 1, axis=0)
+    return out
 
-dataset = 'IITD'
+dataset = 'tongji'
 print('===current dataset is:'+dataset+'!===')
 model_folder = '/home/ubuntu/graduation_model/merge/'+dataset+'/'
 already_prepared = True
-test_mode = False
+test_mode = True
 root_path = '/home/ubuntu/dataset/'+dataset+'/session/'
 if test_mode:
     root_path = root_path = '/home/ubuntu/dataset/'+dataset+'/test_session/'
@@ -178,7 +268,7 @@ session2_dataset = MyDataset(root_path+'session2/',
 session1_dataloader = DataLoader(dataset=session1_dataset, batch_size=batch_size, shuffle=False)
 session2_dataloader = DataLoader(dataset=session2_dataset, batch_size=batch_size, shuffle=True)
 if_need_balance=False
-if_need_norm = 'none'
+if_need_norm = 'unitlength'
 
 # train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 net = ResNet.resnet34()
@@ -211,11 +301,6 @@ else:
 # weights = feature_norm(weights)
 # pca_weights = feature_norm(pca_weights)
 # 标准化
-
-
-
-
-
 # test_dl_feature = test_dl_feature.cpu().numpy()
 # query = feature_norm(query)
 # pca_query = feature_norm(pca_query)
@@ -239,8 +324,9 @@ print('===total time: %f***average time: %f==='%(run_time,run_time/len(testlabel
 
 # calculate dynamic weight
 
-dl_weight,merge_weight, lda_weight, compcode_weight = [0.901,0.901,0.8, 0.8]
+# merge_weight, lda_weight, compcode_weight = calculate_weight([0.9,0.8, 0.8])
 # svm_merge = SVC(kernel='sigmoid')
+merge_weight, lda_weight, compcode_weight = [0.9,0.8, 0.8]
 # svm_merge = LinearSVC()
 # svm_merge.fit(merge_gallery,gallery_label)
 # print(dl_weight)
@@ -254,52 +340,113 @@ start_time = time.perf_counter()
 # 确定batch
 batch_size = 100
 
-while idx*100 < len(test_dl_feature):
-    if (idx+1)*100 < len(test_dl_feature):
-        # print('yes')
-        cur_merge = test_merge[idx*100:(idx+1)*100]
-        cur_query = query[idx*100:(idx+1)*100]
-        cur_code = test_code_feature[idx*100:(idx+1)*100]
-        cur_label = testlabel[idx*100:(idx+1)*100]
-    else:
-        # print('no')
-        cur_merge = test_merge[idx * 100:]
-        cur_query = query[idx * 100:]
-        cur_code = test_code_feature[idx * 100:]
-        cur_label = testlabel[idx * 100:]
-    classify_merge = get_score_matrix(merge_gallery,cur_merge)*merge_weight
-    classify_lda = get_score_matrix(weights,cur_query)*lda_weight
-    classify_code = get_score_matrix(code_gallery,cur_code)*compcode_weight
-    # print(merge_gallery)
-    res_score = classify_merge+classify_lda+classify_code
-    res_idx = np.argmax(res_score,axis=0)
-    res = gallery_label[res_idx]
-    # print(res_idx)
-    # print(res)
-    # print(cur_label)
+resnet_match_result = cosine_similarity(feature_gallery,test_dl_feature)
+cca_match_result = ccosine_similarity(merge_gallery,test_merge)
+lda_match_result = ccosine_similarity(weights,query)
+code_match_result = ccosine_similarity(code_gallery,test_code_feature)
+pca_match_result = cosine_similarity(pca_weights,pca_query)
 
-    cur_correct = np.sum(res == cur_label)
-    # print(cur_correct)
-    total_correct+=cur_correct
-    # else:
-    #     print(vote_box,end='')
-    #     print('     correct answer is :%d'%testlabel[idx])
-    # if (idx + 1) % 100 == 0:
-    print('batch %d: correct rate = %.3f' % (batch, cur_correct / len(cur_label)))
-    cur_correct = 0
-    batch += 1
-    idx += 1
-    # break
-# print(total_correct)
-print('TOTAL CORRECT RATE: %.3f' % (total_correct / len(testlabel)))
-end_time = time.perf_counter()
-run_time = end_time-start_time
-print('===total time: %f***average time: %f==='%(run_time,run_time/len(testlabel)))
+final_match_result = merge_weight*cca_match_result+lda_weight*lda_match_result+compcode_weight*code_match_result
+final_match_result = feature_norm(final_match_result)
+res_match_result = feature_norm(resnet_match_result)
+cca_match_result = feature_norm(cca_match_result)
+lda_match_result = feature_norm(lda_match_result)
+code_match_result = feature_norm(code_match_result)
+pca_match_result = feature_norm(pca_match_result)
+
+print(final_match_result.shape)
+pred_label = gallery_label[np.argmax(final_match_result,axis=0)]
+
+our_positive,our_score = get_positive_label(final_match_result,gallery_label,testlabel)
+class_in = []
+class_each = []
+thre = 0.635545550667493
+ans =0
+# for i in range(len(our_positive)):
+#     if our_positive[i] == 1:
+#         label1 = i//1200
+#         label2 = i%1200
+#         if gallery_label[label1] == testlabel[label2] and our_score[i] <thre:
+#             ans+=1
+# print(ans)
 
 
+# display_one_dim(final_match_result[:, 0])
+
+total_correct = np.sum(pred_label == testlabel)
+test_score = np.sum(our_score > thre)
+print('a:%d'%test_score)
+# print(testlabel)
+print(total_correct)
+print(len(our_positive))
+our_fpr, our_tpr, our_thresholds = roc_curve(our_positive, our_score, pos_label=1)
+print(max(our_thresholds))
+
+# fn_num = 0
+# where_0001 = np.argmin(abs(0.01-1+our_fpr))
+# print(our_tpr[where_0001])
 
 
+# display_one_dim(our_fpr)
+# res_positive,res_score = get_positive_label(resnet_match_result,gallery_label,testlabel)
+# res_fpr, res_tpr, res_thresholds = roc_curve(res_positive, res_score, pos_label=1)
+# pca_positive,pca_score = get_positive_label(pca_match_result,gallery_label,testlabel)
+# pca_fpr, pca_tpr, pca_thresholds = roc_curve(pca_positive, pca_score, pos_label=1)
+# lda_positive,lda_score = get_positive_label(lda_match_result,gallery_label,testlabel)
+# lda_fpr, lda_tpr, lda_thresholds = roc_curve(lda_positive, lda_score, pos_label=1)
+# code_positive,code_score = get_positive_label(code_match_result,gallery_label,testlabel)
+# code_fpr, code_tpr, code_thresholds = roc_curve(code_positive, code_score, pos_label=1)
+# cca_positive,cca_score = get_positive_label(cca_match_result,gallery_label,testlabel)
+# cca_fpr, cca_tpr, cca_thresholds = roc_curve(cca_positive, cca_score, pos_label=1)
+# print(fpr)
+# res_fpr
+our_auc =auc(our_fpr,our_tpr)
+# print(our_auc)
 
 
-
+# plt.figure()
+l1, = plt.plot(our_fpr, our_tpr)
+# l2, = plt.plot(our_thresholds, our_fpr)
+# plt.ylim((0,0.1))
+# lengend = plt.legend(handles=[l1,l2],labels=['fnr','far'],loc='best')
+plt.show()
+# l2, = plt.plot(res_fpr, res_tpr)
+# l3, = plt.plot(lda_fpr, lda_tpr)
+# l4, = plt.plot(pca_fpr, pca_tpr)
+# l5, = plt.plot(code_fpr, code_tpr)
+# l6, = plt.plot(cca_fpr, cca_tpr)
+# plt.xlabel('False Accept Rate')
+# plt.ylabel('Genuine Accept Rate')
+# plt.xlim((0,0.04))
+# plt.ylim((0.96,1))
+# lengend = plt.legend(handles=[l1,l2,l3,l4,l5,l6],labels=['ours','ResNet-34','LDA','PCA','CompCode','cca fused feature'],loc='best')
+# # plt.title('ROC')
+# # plt.plot(fpr, tpr)
+# # plt.xlabel('False Positive Rate')
+# # plt.ylabel('True Positive Rate')
+# # plt.title('Receiver Operating Characteristic (ROC) Curve')
+# plt.savefig('/home/ubuntu/output_image/'+dataset+'_roc_curve.pdf')
+# plt.show()
+#
+#
+our_eer = compute_eer(our_fpr,our_tpr,our_thresholds)
+# res_eer = compute_eer(res_fpr,res_tpr,res_thresholds)
+# pca_eer = compute_eer(pca_fpr,pca_tpr,pca_thresholds)
+# lda_eer = compute_eer(lda_fpr,lda_tpr,lda_thresholds)
+# code_eer = compute_eer(code_fpr,code_tpr,code_thresholds)
+# cca_eer = compute_eer(cca_fpr,cca_tpr,cca_thresholds)
+print("OUR_EER:", our_eer)
+# print("Res_EER:", res_eer)
+# print("Code_EER:", code_eer)
+# print("LDA_EER:", lda_eer)
+# print("PCA_EER:", pca_eer)
+# print("CCA_EER:", cca_eer)
+# plt.figure()
+# plt.plot(1 - tpr, thresholds,label = 'far')
+# plt.plot(fpr, thresholds,label = 'fpr')
+# plt.legend()
+# plt.xlabel('thresh')
+# plt.ylabel('far/fpr')
+# plt.title(' eer')
+# plt.show()
 

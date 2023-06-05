@@ -236,7 +236,7 @@ prepare_transform_for_image()
 my_gabor_filter = Gabor_filters()
 my_gabor_filter.build_filters()
 
-dataset = 'tongji'
+dataset = 'IITD'
 print('===current dataset is '+dataset+'!===')
 model_folder = '/home/ubuntu/graduation_model/merge/'+dataset+'/'
 already_prepared = False

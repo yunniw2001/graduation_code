@@ -101,6 +101,13 @@ def make_IITD_test_label(img_dir, text_dir):
         # break
     write_file.close()
 
+def mv_casia(from_dir,to_dir):
+    list_name = os.listdir(to_dir)
+    list_img = os.listdir(from_dir)
+    for item in list_name:
+        if item in list_img:
+            shutil.copy(from_dir+item, to_dir+item)
+    return
 
 def make_left_right_IITD(ori_path,direction,to_dir):
     files = os.listdir(ori_path)
@@ -158,8 +165,32 @@ def remove_line():
         line = input()
     for i in res:
         print(i)
+
+def exchange():
+    line = input()
+    res = []
+    while line:
+        line = line.split('&')
+        tmp = line[2]
+        line[2] = line[1]
+        line[1] = tmp
+        tmp = line[3]
+        line[3] = line[4]
+        line[4] = tmp
+        tmp = line[5]
+        line[5] = line[6]
+        line[6] = tmp
+        res.append(line)
+        line = input()
+    for item in res:
+        for word in item:
+            print(word,end='&')
+        print('')
 if __name__ == '__main__':
-    remove_line()
+    # remove_line()
+    exchange()
+    # mv_casia('/home/ubuntu/dataset/CASIA/images/','/home/ubuntu/dataset/CASIA/train/')
+    # make_CASIA_test_label('/home/ubuntu/dataset/CASIA/train/','/home/ubuntu/dataset/CASIA/train_label.txt')
     # make_session_tongji('/home/ubuntu/dataset/tongji/images/','/home/ubuntu/dataset/tongji/session/session1/','/home/ubuntu/dataset/tongji/session/session2/')
     # make_tongji_test_label('/home/ubuntu/dataset/tongji/session/session2/',
     #                          '/home/ubuntu/dataset/tongji/session/session2_label.txt')

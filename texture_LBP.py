@@ -74,8 +74,8 @@ radius = 1
 n_points = 8 * radius
 dataset = 'CASIA'
 # 读入图像
-img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1/'
-label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
+img_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session1/'
+label_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session1_label.txt'
 save_gallery = '/home/ubuntu/graduation_model/gallery_texture.npy'
 save_label = '/home/ubuntu/graduation_model/label_texture.npy'
 prepare_transform_for_image()
@@ -93,8 +93,8 @@ if not already_processed:
     lbp_gallery, palmlabel = read_image_and_label(label_PATH, img_PATH)
     lbp_gallery = np.array(lbp_gallery)
     palmlabel = np.array(palmlabel)
-    np.save(save_gallery,lbp_gallery)
-    np.save(save_label,palmlabel)
+    # np.save(save_gallery,lbp_gallery)
+    # np.save(save_label,palmlabel)
 else:
     lbp_gallery = np.load(save_gallery)
     palmlabel = np.load(save_label)
@@ -111,6 +111,7 @@ for tmp_lbp in lbp_gallery:
     hist, bins = np.histogram(tmp_lbp.ravel(), bins=n_bins, range=(0, n_bins))
     hist_gallery.append(hist)
 hist_gallery = np.array(hist_gallery)
+# hist_gallery = lbp_gallery
 print('===DONE!===')
 # print(hist)
 # plt.hist(lbp.ravel(),bins=n_bins,range=(0,n_bins),density=True)
@@ -125,12 +126,12 @@ test_lbp_gallery, test_labels = read_image_and_label(testlabel_PATH, testimg_PAT
 print(len(test_lbp_gallery))
 print('===load success! generate LBP success!===')
 
-test_hist = []
+test_hist = test_lbp_gallery
 print('===start generating test histogram!===')
 for tmp_lbp in test_lbp_gallery:
     hist, bins = np.histogram(tmp_lbp.ravel(), bins=n_bins, range=(0, n_bins))
     test_hist.append(hist)
-print(len(test_hist))
+# print(len(test_hist))
 print('===DONE!===')
 
 print('===start recognition===')

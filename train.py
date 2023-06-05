@@ -35,13 +35,12 @@ def prepare_transform_for_image():
                 [rotation, contrast_brightness_adjustment, smooth_or_sharpening, color_shift], 0.6),
             resized_cropping,
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ]
     )
     test_preprocessing = transforms.Compose(
         [resized_cropping,
          transforms.ToTensor(),
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+        ])
 
 
 def read_txt(text_dir):
@@ -85,7 +84,7 @@ net = ResNet.resnet34()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 net.to(device)
 # 预览输入图像
-writer = SummaryWriter(log_dir='/home/ubuntu/tensorboard_data/')
+writer = SummaryWriter(log_dir='/home/ubuntu/tensorboard_data/tensorboard/')
 data_iter = iter(train_dataloader)
 images, labels = next(data_iter)
 img_grid = torchvision.utils.make_grid(images)
@@ -103,11 +102,11 @@ per_idx = 0
 train_accuracy = []
 epoch = 0
 record_size = 15
-flag = False
+flag = True
 # 加载参数
-PATH_NET = '/home/ubuntu/graduation_model/deeplearning/model_net_134.pt'
+PATH_NET = '/home/ubuntu/graduation_model/deeplearning/CASIA/model_net_74.pt'
 # PATH_ARC = '/home/ubuntu/graduation_model/deeplearning/model_arcloss_139.pt'
-flag = False
+# flag = False
 print("===start load param===")
 if flag == True:
     net.load_state_dict(torch.load(PATH_NET))

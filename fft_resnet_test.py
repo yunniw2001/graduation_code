@@ -8,7 +8,8 @@ import torch.optim as optim
 import ResNet
 from ArcFace import ArcFace
 from my_transformer import MeanFiltersTransform, MedianFiltersTransform, GaussFiltersTransform, \
-    GaussianFiltersTransformUnsharpMask, MedianFiltersTransformUnsharpMask, MeanFiltersTransformUnsharpMask, MyDataset
+    GaussianFiltersTransformUnsharpMask, MedianFiltersTransformUnsharpMask, MeanFiltersTransformUnsharpMask, MyDataset, \
+    FFT_converter
 
 # random apply preprocessing
 preprocessing = []
@@ -18,8 +19,10 @@ gallery_preprocessing = []
 def prepare_transform_for_image():
     global preprocessing
     global gallery_preprocessing
-    rotation = transforms.RandomRotation(5)
+    rotation = transforms.RandomRotation(6)
     resized_cropping = transforms.Resize((224, 224))
+    my_fft_converter = FFT_converter()
+    my_fft_converter.__int__(12)
     contrast_brightness_adjustment = transforms.ColorJitter(brightness=0.5, contrast=0.5)
     smooth_or_sharpening = transforms.RandomChoice([
         MeanFiltersTransform(),
@@ -35,14 +38,16 @@ def prepare_transform_for_image():
             transforms.RandomApply(
                 [rotation, contrast_brightness_adjustment, smooth_or_sharpening, color_shift], 0.6),
             resized_cropping,
-            transforms.ToTensor(),
+            # my_fft_converter(0.03),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ]
     )
     gallery_preprocessing = transforms.Compose(
         [resized_cropping,
+         my_fft_converter,
          transforms.ToTensor(),
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+         ])
 
 
 def calculate_cos_similarity(test_feature):
@@ -68,12 +73,12 @@ lr = 0.001
 epochs = 1000
 
 prepare_transform_for_image()
-dataset = 'tongji'
-root_path = '/home/ubuntu/dataset/'+dataset+'/session/'
-session1_dataset = MyDataset(root_path+'session1/',
-                             root_path+'session1_label.txt', gallery_preprocessing)
-session2_dataset = MyDataset(root_path+'session2/',
-                             root_path+'session2_label.txt', gallery_preprocessing)
+dataset = 'CASIA'
+root_path = '/home/ubuntu/dataset/' + dataset + '/test_session/'
+session1_dataset = MyDataset(root_path + 'session1/',
+                             root_path + 'session1_label.txt', gallery_preprocessing)
+session2_dataset = MyDataset(root_path + 'session2/',
+                             root_path + 'session2_label.txt', gallery_preprocessing)
 session1_dataloader = DataLoader(dataset=session1_dataset, batch_size=batch_size, shuffle=False)
 session2_dataloader = DataLoader(dataset=session2_dataset, batch_size=batch_size, shuffle=True)
 # train_dataloader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
@@ -87,7 +92,11 @@ print("===start load param===")
 net.load_state_dict(torch.load(PATH_NET))
 net.eval()
 print("===successfully load net===")
-
+writer = SummaryWriter(log_dir='/home/ubuntu/tensorboard_data/')
+data_iter = iter(session1_dataloader)
+images, labels = next(data_iter)
+img_grid = torchvision.utils.make_grid(images)
+writer.add_image('preview some pictures after', img_grid)
 print("===palm print recognition test===")
 with torch.no_grad():
     print("===start generating gallery===")
@@ -95,6 +104,7 @@ with torch.no_grad():
     feature_gallery = []
     for i, data in enumerate(session1_dataloader):
         images, label = data
+        images = images.type(torch.FloatTensor)
         images = images.to(device)
         label = label.to(device)
         gallery_label.extend(label)
@@ -113,6 +123,7 @@ with torch.no_grad():
     total_i = 0
     for i, data in enumerate(session2_dataloader):
         images, label = data
+        images = images.type(torch.FloatTensor)
         images = images.to(device)
         label = label.to(device)
         feature, normalized_feature = net(images, None)
@@ -129,8 +140,8 @@ with torch.no_grad():
             k += 1
         average_accuracy += calculate_accuracy(prec_logits, label)
         total += calculate_accuracy(prec_logits, label)
-        total_i+=1
+        total_i += 1
         if (i + 1) % 10 == 0:
             print('[batch: %d] accuracy: %.3f' % (i, average_accuracy / 10))
             average_accuracy = 0
-    print("general average accuracy: %.3f"%(total/total_i))
+    print("general average accuracy: %.3f" % (total / total_i))

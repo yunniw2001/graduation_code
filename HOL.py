@@ -107,7 +107,7 @@ class Gabor_filters:
         # for temp in range(len(res)):
         #     plt.subplot(2, 3, temp + 1)
         #     # plt.imshow(res[temp], cmap='gray')
-        plt.show()
+        # plt.show()
 
 
 my_gabor_filter = Gabor_filters()
@@ -155,7 +155,7 @@ def read_image_and_label(labelpath, imgpath, state='train'):
     return code_g, labels
 
 
-dataset = 'CASIA'
+dataset = 'IITD'
 # 读入图像
 img_PATH = '/home/ubuntu/dataset/' + dataset + '/test_session/session1/'
 label_PATH = '/home/ubuntu/dataset/' + dataset + '/test_session/session1_label.txt'

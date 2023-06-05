@@ -132,6 +132,29 @@ class GaussianFiltersTransformUnsharpMask:
             return img
 
 
+class FFT_converter:
+    def __int__(self, len):
+        self.p = len
+
+    def __call__(self, img):
+        # print(img)
+        r, c = img.size
+        blank_paper = np.full((r, c,3), 255, dtype=np.uint8)
+        f = np.fft.fft2(img)
+        f_paper = np.fft.fft2(blank_paper)
+        fshift = np.fft.fftshift(f)
+        fshift_blank = np.fft.fftshift(f_paper)
+        center_r, center_c = int(r / 2), int(c / 2)
+        # beta_r, beta_c = int(self.p * r), int(self.p * c)
+        beta_r, beta_c = self.p,self.p
+        fshift[center_r - beta_r:center_r + beta_r, center_c - beta_c:center_c + beta_c] = fshift_blank[
+                                                                                           center_r - beta_r:center_r + beta_r,
+                                                                                           center_c - beta_c:center_c + beta_c]
+        ishift = np.fft.ifftshift(fshift)
+        iimg = np.abs(np.fft.ifft2(ishift))
+        return iimg
+
+
 class MyDataset(Dataset):
     def __init__(self, img_path, txt_path, transform=None):
         super(MyDataset, self).__init__()
@@ -165,4 +188,3 @@ class MyDataset(Dataset):
         label = torch.from_numpy(label)
 
         return img, label
-

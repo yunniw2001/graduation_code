@@ -52,10 +52,10 @@ def prepare_transform_for_image():
 
 
 # 读入图片
-dataset = 'CASIA'
-img_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2/'
-label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session2_label.txt'
-gallery_label_PATH = '/home/ubuntu/dataset/'+dataset+'/test_session/session1_label.txt'
+dataset = 'tongji'
+img_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session2/'
+label_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session2_label.txt'
+gallery_label_PATH = '/home/ubuntu/dataset/'+dataset+'/session/session1_label.txt'
 save_pca_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1.joblib'
 save_numpy_PATH = '/home/ubuntu/graduation_model/palmmatrix_test_session1_numpy.npy'
 save_svm_PATH = '/home/ubuntu/graduation_model/merge/'+dataset+'/svm.joblib'
@@ -136,14 +136,16 @@ batch = 0
 # query_kpca = kpca.transform(testmatrix)
 # query = pca.transform(testmatrix)
 # test_sub = np.append(query,query_kpca,axis=1)
-print(testmatrix.shape)
+# print(testmatrix.shape)
 plt.scatter(testmatrix[:, 0], testmatrix[:, 1],marker='o',c=testlabel)
-plt.xlabel("xxxx")
+# plt.xlabel("xxxx")
 plt.show()
+plt.savefig("2d_pca_before.pdf")
 query = lda.transform(testmatrix)
-print(query.shape)
+# print(query.shape)
 plt.scatter(query[:, 0], query[:, 1],marker='o',c=testlabel)
 plt.show()
+plt.savefig("2d_pca_after.pdf")
 # print(query.shape)
 # print(query_kpca.shape)
 # sys.exit()
@@ -168,6 +170,6 @@ while idx < len(query):
         cur_correct=0
         batch+=1
     idx += 1
-    break
+    # break
 
 print('TOTAL CORRECT RATE: %.3f'%(total_correct/len(testmatrix)))
